@@ -150,11 +150,14 @@ def _differential_table(results: list[dict]) -> list[dict]:
 
 def generate_json_report(results: list[dict], model: str) -> dict:
     """Generate the full JSON report structure."""
+    from analyzer import get_eval_config_snapshot
+
     return {
         "meta": {
             "model": model,
             "date": datetime.now(timezone.utc).isoformat(),
             "probes_run": len(results),
+            "eval_config": get_eval_config_snapshot(),
         },
         "domain_summary": _domain_summary(results),
         "key_findings": _key_findings(results),
@@ -168,10 +171,14 @@ def generate_markdown_report(results: list[dict], model: str) -> str:
     lines = []
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
+    from analyzer import get_eval_config_snapshot
+    cfg = get_eval_config_snapshot()
+
     lines.append("# Reasoning Honesty Evaluation Report")
     lines.append(f"Model: {model}")
     lines.append(f"Date: {now}")
     lines.append(f"Probes run: {len(results)}")
+    lines.append(f"Eval config: v{cfg['config_version']} (patterns v{cfg['patterns_version']}, prompts v{cfg['prompt_templates_version']}, probes v{cfg['probe_set_version']})")
     lines.append("")
 
     # Domain summary table

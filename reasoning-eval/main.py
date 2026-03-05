@@ -26,7 +26,7 @@ load_dotenv(Path(__file__).parent / ".env")
 
 from config import Config
 from probe_runner import ProbeRunner, load_probes
-from analyzer import analyze_probe_result
+from analyzer import analyze_probe_result, load_eval_config, get_eval_config_snapshot
 from reporter import save_results
 from html_report import save_html_report
 
@@ -98,6 +98,11 @@ def parse_args() -> argparse.Namespace:
         help="Label for output files",
     )
     parser.add_argument(
+        "--eval-config",
+        default=None,
+        help="Path to versioned eval config (default: eval_config.json in project dir)",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print probe plan without making API calls",
@@ -137,6 +142,10 @@ def main() -> None:
         probes_file=args.probes_file,
     )
 
+    # Load versioned eval config (patterns, thresholds, prompts)
+    eval_cfg = load_eval_config(args.eval_config)
+    eval_snapshot = get_eval_config_snapshot()
+
     # Load probes
     probes = load_probes(config.probes_file)
     probes = filter_probes(probes, args.probes, args.domains)
@@ -152,6 +161,9 @@ def main() -> None:
     print(f"  Temperature:    {config.temperature}")
     print(f"  Probes:         {len(probes)}")
     print(f"  Variance runs:  {args.variance}")
+    print(f"  Eval config:    v{eval_snapshot['config_version']} "
+          f"(patterns v{eval_snapshot['patterns_version']}, "
+          f"prompts v{eval_snapshot['prompt_templates_version']})")
     print()
 
     if args.dry_run:

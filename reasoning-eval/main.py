@@ -19,6 +19,11 @@ import json
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+# Load .env from the reasoning-eval directory
+load_dotenv(Path(__file__).parent / ".env")
+
 from config import Config
 from probe_runner import ProbeRunner, load_probes
 from analyzer import analyze_probe_result

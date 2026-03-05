@@ -89,9 +89,43 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stages", choices=["stage1", "stage1_stage3", "all"], default="all")
     parser.add_argument("--classify", choices=["heuristic", "llm"], default="heuristic")
     parser.add_argument("--mock", action="store_true")
+    parser.add_argument(
+        "--probes", nargs="+",
+        help="Run only specific probe IDs (e.g., med-dosage-1 fin-tax-1). Works across all suites.",
+    )
+    parser.add_argument(
+        "--domains", nargs="+",
+        help="Run only probes for specific domains (e.g., medical legal). Works across all suites.",
+    )
+    parser.add_argument(
+        "--max-retries", type=int, default=4,
+        help="Max retries on rate limit / overload (default: 4)",
+    )
+    parser.add_argument(
+        "--retry-base-delay", type=float, default=2.0,
+        help="Base delay for exponential backoff in seconds (default: 2.0)",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--skip-comparative", action="store_true", help="Skip final comparative report")
+    parser.add_argument(
+        "--continue-on-suite-failure", action="store_true", default=True,
+        help="Continue to next suite if one suite fails entirely (default: True)",
+    )
     return parser.parse_args()
+
+
+def _filter_probes(
+    probes: list[dict],
+    probe_ids: list[str] | None = None,
+    domains: list[str] | None = None,
+) -> list[dict]:
+    """Filter probes by ID or domain."""
+    filtered = probes
+    if probe_ids:
+        filtered = [p for p in filtered if p["id"] in probe_ids]
+    if domains:
+        filtered = [p for p in filtered if p["domain"] in domains]
+    return filtered
 
 
 def run_suite(
@@ -107,6 +141,13 @@ def run_suite(
     print(f"{'='*70}\n")
 
     probes = load_probes(suite_def["file"])
+
+    # Apply probe-level filters
+    probes = _filter_probes(probes, getattr(args, 'probes', None), getattr(args, 'domains', None))
+    if not probes:
+        print(f"  No probes match filters for suite '{suite_key}', skipping.")
+        return []
+
     print(f"  Probes: {len(probes)}")
     print(f"  Variance: {args.variance}")
     print(f"  Total runs: {len(probes) * args.variance}")
@@ -180,6 +221,8 @@ def main():
         temperature=args.temperature,
         classification_mode=args.classify,
         inter_call_delay=args.delay,
+        max_retries=args.max_retries,
+        retry_base_delay=args.retry_base_delay,
     )
 
     print("Full Suite Evaluation Configuration:")
@@ -213,21 +256,30 @@ def main():
         config.validate()
         runner = ProbeRunner(config)
 
-    # Run all suites
+    # Run all suites (with per-suite error isolation)
     all_combined_results = []
+    suite_failures = []
     suite_start = time.time()
 
     for suite_key in suites_to_run:
-        suite_results = run_suite(
-            suite_key, SUITES[suite_key], runner, config, args
-        )
-        all_combined_results.extend(suite_results)
+        try:
+            suite_results = run_suite(
+                suite_key, SUITES[suite_key], runner, config, args
+            )
+            all_combined_results.extend(suite_results)
+        except Exception as exc:
+            print(f"\n  [SUITE FAILURE] Suite '{suite_key}' failed: {exc}")
+            suite_failures.append({"suite": suite_key, "error": str(exc)})
+            if not args.continue_on_suite_failure:
+                raise
 
     elapsed = time.time() - suite_start
     print(f"\n{'='*70}")
     print(f"  ALL SUITES COMPLETE")
     print(f"  Total time: {elapsed:.1f}s")
     print(f"  Total probe runs: {len(all_combined_results)}")
+    if suite_failures:
+        print(f"  Suite failures: {len(suite_failures)} — {', '.join(f['suite'] for f in suite_failures)}")
     print(f"{'='*70}")
 
     # Generate comparative analysis

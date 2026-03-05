@@ -21,6 +21,12 @@ class Config:
     inter_call_delay: float = 1.0  # seconds between API calls
     probes_file: str = "probes.json"
 
+    # Retry settings (exponential backoff)
+    max_retries: int = 4
+    retry_base_delay: float = 2.0  # seconds; doubles each retry (2, 4, 8, 16)
+    retry_on_overload: bool = True  # retry on 429 / overloaded_error
+    api_timeout: float = 120.0  # seconds per API call
+
     # Output settings
     results_dir: str = "results"
     reports_dir: str = "reports"

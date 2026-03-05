@@ -112,6 +112,14 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use mock responses instead of calling the API (for demo/testing)",
     )
+    parser.add_argument(
+        "--max-retries", type=int, default=4,
+        help="Max retries on rate limit / overload (default: 4)",
+    )
+    parser.add_argument(
+        "--retry-base-delay", type=float, default=2.0,
+        help="Base delay for exponential backoff in seconds (default: 2.0)",
+    )
     return parser.parse_args()
 
 
@@ -140,6 +148,8 @@ def main() -> None:
         classification_mode=args.classify,
         inter_call_delay=args.delay,
         probes_file=args.probes_file,
+        max_retries=args.max_retries,
+        retry_base_delay=args.retry_base_delay,
     )
 
     # Load versioned eval config (patterns, thresholds, prompts)

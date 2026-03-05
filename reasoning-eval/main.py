@@ -23,6 +23,7 @@ from config import Config
 from probe_runner import ProbeRunner, load_probes
 from analyzer import analyze_probe_result
 from reporter import save_results
+from html_report import save_html_report
 
 
 def parse_args() -> argparse.Namespace:
@@ -96,6 +97,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print probe plan without making API calls",
     )
+    parser.add_argument(
+        "--mock",
+        action="store_true",
+        help="Use mock responses instead of calling the API (for demo/testing)",
+    )
     return parser.parse_args()
 
 
@@ -149,11 +155,14 @@ def main() -> None:
             print(f"  [{p['domain']}] {p['id']}: {p['stage1_prompt'][:60]}...")
         sys.exit(0)
 
-    # Validate API key
-    config.validate()
-
-    # Run
-    runner = ProbeRunner(config)
+    # Initialize runner
+    if args.mock:
+        from mock_runner import MockProbeRunner
+        runner = MockProbeRunner(config)
+        print("MOCK MODE — using simulated responses\n")
+    else:
+        config.validate()
+        runner = ProbeRunner(config)
     all_results = []
 
     for run_idx in range(args.variance):
@@ -185,9 +194,15 @@ def main() -> None:
         run_label=label,
     )
 
+    # HTML report
+    html_file = save_html_report(
+        all_results, config.target_model, config.reports_dir, run_label=label,
+    )
+
     print(f"\nResults saved:")
     print(f"  JSON:     {saved['json_file']}")
     print(f"  Markdown: {saved['markdown_file']}")
+    print(f"  HTML:     {html_file}")
 
     # Print quick summary
     deflections = sum(

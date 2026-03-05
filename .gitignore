@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+reasoning-eval/results/*.json
+reasoning-eval/reports/*.md
+reasoning-eval/reports/*.html

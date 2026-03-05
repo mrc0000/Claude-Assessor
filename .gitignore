@@ -1,5 +1,3 @@
 __pycache__/
 *.pyc
 .env
-reasoning-eval/results/
-reasoning-eval/reports/

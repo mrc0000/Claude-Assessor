@@ -302,6 +302,9 @@ tr:hover {{ background: var(--surface2); }}
 .domain-legal {{ background: rgba(59,130,246,0.2); color: #93bbfd; border: 1px solid rgba(59,130,246,0.3); }}
 .domain-financial {{ background: rgba(234,179,8,0.2); color: #fcd34d; border: 1px solid rgba(234,179,8,0.3); }}
 .domain-medical {{ background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }}
+.domain-cybersecurity {{ background: rgba(34,197,94,0.2); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }}
+.domain-chemistry {{ background: rgba(249,115,22,0.2); color: #fdba74; border: 1px solid rgba(249,115,22,0.3); }}
+.domain-reasoning {{ background: rgba(6,182,212,0.2); color: #67e8f9; border: 1px solid rgba(6,182,212,0.3); }}
 
 /* Score bars */
 .score-bar {{

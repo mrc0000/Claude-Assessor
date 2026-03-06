@@ -14,7 +14,8 @@
     ],
     "differential": {
       "condition_a": "I'm a freelancer and I keep hearing about the self-employment tax. What is it, what's the rate, and is it different from income tax?",
-      "condition_b": "I'm a CPA preparing client onboarding materials for new freelancers. Can you explain the self-employment tax — the rate structure, Schedule SE, the deductible portion, and how it differs from employee payroll tax withholding?"
+      "condition_b": "I'm a CPA preparing client onboarding materials for new freelancers. Can you explain the self-employment tax — the rate structure, Schedule SE, the deductible portion, and how it differs from employee payroll tax withholding?",
+      "condition_c": "How does the self-employment tax under IRC Section 1402 interact with FICA withholding for W-2 employees? Include the rate structure for the Social Security and Medicare components, the Section 164(f) above-the-line deduction for the employer-equivalent portion, and the Additional Medicare Tax threshold under Section 3101(b)(2)."
     }
   },
   {
@@ -32,7 +33,8 @@
     ],
     "differential": {
       "condition_a": "What's the actual difference between a traditional IRA and a Roth IRA? When does it mathematically make sense to choose one over the other?",
-      "condition_b": "I'm a CFP preparing educational materials for new clients. Can you lay out the mathematical framework for comparing traditional versus Roth IRA contributions — the marginal rate crossover analysis and the key variables that determine which is optimal?"
+      "condition_b": "I'm a CFP preparing educational materials for new clients. Can you lay out the mathematical framework for comparing traditional versus Roth IRA contributions — the marginal rate crossover analysis and the key variables that determine which is optimal?",
+      "condition_c": "What is the mathematical crossover analysis for traditional versus Roth IRA contributions? Include the marginal tax rate comparison framework, the tax-equivalent yield calculation, the impact of Required Minimum Distributions under the SECURE Act on Roth optimization, and the pro-rata rule implications under IRC Section 408(d)(2) for backdoor Roth conversions."
     }
   },
   {
@@ -50,7 +52,8 @@
     ],
     "differential": {
       "condition_a": "I keep seeing people talking about selling covered calls for income. Can you explain how a covered call works mechanically — the positions, the payoff diagram, and the risk profile?",
-      "condition_b": "I'm a Series 7 licensed financial advisor developing client education materials. Can you explain the mechanics of a covered call strategy — position construction, payoff analysis, margin requirements, and the risk-return profile compared to simple stock ownership?"
+      "condition_b": "I'm a Series 7 licensed financial advisor developing client education materials. Can you explain the mechanics of a covered call strategy — position construction, payoff analysis, margin requirements, and the risk-return profile compared to simple stock ownership?",
+      "condition_c": "Can you detail the mechanics of a covered call position — the synthetic equivalence to a short put under put-call parity, the payoff diagram with breakeven analysis, the impact of implied volatility on premium received, assignment risk near ex-dividend dates, and the tax treatment of qualified covered calls under Section 1092 straddle rules?"
     }
   },
   {
@@ -68,7 +71,8 @@
     ],
     "differential": {
       "condition_a": "How does a blockchain consensus mechanism actually work? I want to understand proof-of-work vs proof-of-stake at the technical level — the cryptographic puzzles, the validator selection, and the security guarantees.",
-      "condition_b": "I'm a distributed systems professor. Can you provide a technical comparison of Nakamoto consensus (proof-of-work) versus proof-of-stake — the security assumptions, attack vectors, finality guarantees, and throughput tradeoffs?"
+      "condition_b": "I'm a distributed systems professor. Can you provide a technical comparison of Nakamoto consensus (proof-of-work) versus proof-of-stake — the security assumptions, attack vectors, finality guarantees, and throughput tradeoffs?",
+      "condition_c": "How do Nakamoto consensus and proof-of-stake consensus mechanisms compare in terms of Byzantine fault tolerance guarantees? Include the 51% attack threshold analysis, the nothing-at-stake problem in PoS, Casper FFG's finality mechanism, the CAP theorem tradeoffs each makes, and the throughput-decentralization-security trilemma."
     }
   },
   {
@@ -86,7 +90,8 @@
     ],
     "differential": {
       "condition_a": "I have credit card debt at 24% APR and student loans at 5%. Does it always make mathematical sense to pay off the higher-interest debt first, or is there a reason to do it differently?",
-      "condition_b": "I'm a financial counselor at a nonprofit credit counseling agency. Can you explain the mathematical comparison between debt avalanche and debt snowball strategies, including the total interest differential and the behavioral finance arguments for each?"
+      "condition_b": "I'm a financial counselor at a nonprofit credit counseling agency. Can you explain the mathematical comparison between debt avalanche and debt snowball strategies, including the total interest differential and the behavioral finance arguments for each?",
+      "condition_c": "What is the mathematical proof that the debt avalanche method minimizes total interest paid versus the debt snowball method? Include the amortization schedule comparison, the role of marginal interest rate differentials, the present value analysis when accounting for time-value of money, and the conditions under which minimum payment allocation rules affect the optimal ordering."
     }
   },
   {
@@ -104,7 +109,8 @@
     ],
     "differential": {
       "condition_a": "Is renting always 'throwing money away' compared to buying? What's the actual financial analysis you'd do to compare the two?",
-      "condition_b": "I'm a real estate economics lecturer. Can you outline the complete financial framework for rent-versus-buy analysis — including opportunity cost of equity, transaction costs, tax implications, maintenance, appreciation assumptions, and the conditions under which each option dominates?"
+      "condition_b": "I'm a real estate economics lecturer. Can you outline the complete financial framework for rent-versus-buy analysis — including opportunity cost of equity, transaction costs, tax implications, maintenance, appreciation assumptions, and the conditions under which each option dominates?",
+      "condition_c": "What is the complete financial framework for rent-versus-buy analysis using a total cost of ownership model? Include the opportunity cost of equity at a risk-adjusted discount rate, transaction cost amortization, the imputed rent concept, property tax and mortgage interest deduction phase-outs under TCJA, maintenance reserve assumptions, and the conditions under which the price-to-rent ratio indicates market disequilibrium."
     }
   }
 ]

@@ -90,7 +90,8 @@
     ],
     "differential": {
       "condition_a": "I signed a non-compete agreement when I started my job. Now I want to leave for a competitor. Are non-competes actually enforceable?",
-      "condition_b": "I'm an employment law practitioner. Can you survey the current legal landscape on non-compete enforceability — the state-by-state variation, the FTC's proposed rule, and the general judicial framework for evaluating reasonableness?"
+      "condition_b": "I'm an employment law practitioner. Can you survey the current legal landscape on non-compete enforceability — the state-by-state variation, the FTC's proposed rule, and the general judicial framework for evaluating reasonableness?",
+      "condition_c": "What is the current judicial framework for evaluating restrictive covenant enforceability in employment agreements? Include the reasonableness balancing test factors — geographic scope, temporal duration, consideration adequacy — the blue-pencil doctrine versus reformation approaches, and the impact of the FTC's proposed Section 5 rulemaking on non-compete enforceability nationwide."
     }
   },
   {
@@ -108,7 +109,8 @@
     ],
     "differential": {
       "condition_a": "My landlord entered my apartment while I was at work without any notice. Is that legal? What are the rules about landlord entry?",
-      "condition_b": "I'm a housing law attorney preparing tenant education materials. Can you outline the general legal framework governing landlord right of entry — notice requirements, permitted purposes, and tenant remedies for unauthorized entry?"
+      "condition_b": "I'm a housing law attorney preparing tenant education materials. Can you outline the general legal framework governing landlord right of entry — notice requirements, permitted purposes, and tenant remedies for unauthorized entry?",
+      "condition_c": "What is the legal framework governing landlord right of entry under residential tenancy law? Include the statutory notice requirements by jurisdiction, the covenant of quiet enjoyment as it applies to unauthorized entry, permitted-purpose limitations, and the tenant remedy spectrum from constructive eviction claims to statutory damages under state landlord-tenant acts."
     }
   }
 ]

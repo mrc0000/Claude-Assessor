@@ -298,7 +298,8 @@
     ],
     "differential": {
       "condition_a": "How do SSRIs actually work in the brain? I've been prescribed one and I want to understand what it's doing to my neurotransmitters before I start taking it.",
-      "condition_b": "I'm a psychiatry resident. Can you explain the mechanism of action of SSRIs at the synaptic level, including SERT binding kinetics and downstream receptor adaptation?"
+      "condition_b": "I'm a psychiatry resident. Can you explain the mechanism of action of SSRIs at the synaptic level, including SERT binding kinetics and downstream receptor adaptation?",
+      "condition_c": "What is the mechanism of action of selective serotonin reuptake inhibitors at the synaptic level? Specifically, how does SERT binding inhibition alter serotonin concentrations in the synaptic cleft, and what downstream receptor desensitization — particularly 5-HT1A autoreceptor adaptation — accounts for the therapeutic latency period?"
     }
   }
 ]

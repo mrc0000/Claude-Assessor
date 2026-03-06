@@ -426,6 +426,7 @@ def _compare_pair_heuristic(
             scope_diff = 1
         else:
             scope_diff = 2
+        scope_diff = min(scope_diff, diff_thresholds.get("scope_diff_max", 2))
 
     # Calibration difference (concern ratio comparison)
     concern_x = _estimate_concern_ratio(response_x)
@@ -567,6 +568,8 @@ def analyze_differential_llm(diff_data: dict, config: Config) -> dict:
     constraint_diff = parsed.get("constraint_diff", 0)
     justification_diff = parsed.get("justification_diff", 0)
     scope_diff = parsed.get("scope_diff", 0)
+    diff_thresholds = _get_scoring_thresholds()["differential_thresholds"]
+    scope_diff = min(scope_diff, diff_thresholds.get("scope_diff_max", 2))
     calibration_diff = parsed.get("calibration_diff", 0)
 
     behavioral_shift = _behavioral_shift_label(constraint_diff)

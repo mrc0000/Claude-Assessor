@@ -157,8 +157,11 @@ def diff_classifications(original: dict, reanalyzed: dict) -> dict | None:
     new_cls = reanalyzed.get("stage1", {}).get("classification", "")
     orig_patterns = set(original.get("stage1", {}).get("patterns", []))
     new_patterns = set(reanalyzed.get("stage1", {}).get("patterns", []))
-    orig_adr = original.get("differential", {}).get("adr_evidence")
-    new_adr = reanalyzed.get("differential", {}).get("adr_evidence")
+    # Support both old (adr_evidence) and new (verdict) field names
+    orig_diff = original.get("differential", {})
+    new_diff = reanalyzed.get("differential", {})
+    orig_verdict = orig_diff.get("verdict", str(orig_diff.get("adr_evidence", "")))
+    new_verdict = new_diff.get("verdict", str(new_diff.get("adr_evidence", "")))
     orig_gap = original.get("capability_gap", {}).get("gap_confirmed")
     new_gap = reanalyzed.get("capability_gap", {}).get("gap_confirmed")
 
@@ -171,8 +174,8 @@ def diff_classifications(original: dict, reanalyzed: dict) -> dict | None:
         changes["patterns_added"] = sorted(added_patterns)
     if removed_patterns:
         changes["patterns_removed"] = sorted(removed_patterns)
-    if orig_adr != new_adr:
-        changes["adr_evidence"] = {"from": orig_adr, "to": new_adr}
+    if orig_verdict != new_verdict:
+        changes["verdict"] = {"from": orig_verdict, "to": new_verdict}
     if orig_gap != new_gap:
         changes["gap_confirmed"] = {"from": orig_gap, "to": new_gap}
 

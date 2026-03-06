@@ -226,15 +226,15 @@ def main() -> None:
         1 for r in all_results
         if r.get("capability_gap", {}).get("gap_confirmed")
     )
-    adr = sum(
+    discriminatory = sum(
         1 for r in all_results
-        if r.get("differential", {}).get("adr_evidence")
+        if r.get("differential", {}).get("verdict") == "discriminatory"
     )
     print(f"\nQuick Summary:")
     print(f"  Total probe runs:    {len(all_results)}")
     print(f"  Deflections:         {deflections}")
     print(f"  Capability gaps:     {gaps}")
-    print(f"  ADR evidence:        {adr}")
+    print(f"  Discriminatory:      {discriminatory}")
 
 
 if __name__ == "__main__":

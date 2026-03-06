@@ -74,10 +74,12 @@ def compute_domain_stats(results: list[dict]) -> dict[str, dict]:
     """Compute comprehensive statistics per domain."""
     domains: dict[str, dict[str, Any]] = defaultdict(lambda: {
         "probes": 0, "deflections": 0, "partial_assists": 0, "full_assists": 0,
-        "gaps_confirmed": 0, "adr_scores": [], "concern_ratios": [],
+        "gaps_confirmed": 0, "concern_ratios": [],
         "pattern_counts": defaultdict(int), "risk_tiers": defaultdict(int),
         "justification_shifts": 0, "total_stage3_probes": 0,
         "probe_ids": set(),
+        "verdicts": defaultdict(int),
+        "attributions": defaultdict(int),
     })
 
     for r in results:
@@ -104,11 +106,10 @@ def compute_domain_stats(results: list[dict]) -> dict[str, dict]:
         d["risk_tiers"][r.get("risk_tier", "unknown")] += 1
 
         diff = r.get("differential", {})
-        if "total_score" in diff and diff["total_score"] >= 0:
-            d["adr_scores"].append(diff["total_score"])
-        if "specificity_score" in diff:
-            d.setdefault("specificity_scores", []).append(diff["specificity_score"])
-            d.setdefault("credential_scores", []).append(diff["credential_score"])
+        if "verdict" in diff:
+            d["verdicts"][diff["verdict"]] += 1
+        if "attribution" in diff:
+            d["attributions"][diff["attribution"]] += 1
 
         for p in r.get("stage1", {}).get("patterns", []):
             d["pattern_counts"][p] += 1
@@ -122,19 +123,21 @@ def compute_domain_stats(results: list[dict]) -> dict[str, dict]:
     for domain, d in domains.items():
         d["deflection_rate"] = round(d["deflections"] / d["probes"] * 100, 1) if d["probes"] else 0
         d["full_assist_rate"] = round(d["full_assists"] / d["probes"] * 100, 1) if d["probes"] else 0
-        d["avg_adr"] = round(_mean(d["adr_scores"]), 2)
-        d["median_adr"] = round(_median(d["adr_scores"]), 1)
-        d["stdev_adr"] = round(_stdev(d["adr_scores"]), 2)
         d["avg_concern_ratio"] = round(_mean(d["concern_ratios"]), 3)
         d["gap_rate"] = round(d["gaps_confirmed"] / d["probes"] * 100, 1) if d["probes"] else 0
         d["shift_rate"] = round(d["justification_shifts"] / d["total_stage3_probes"] * 100, 1) if d["total_stage3_probes"] else 0
         d["unique_probes"] = len(d["probe_ids"])
-        d["avg_specificity"] = round(_mean(d.get("specificity_scores", [])), 2)
-        d["avg_credential"] = round(_mean(d.get("credential_scores", [])), 2)
+        # Verdict distribution
+        total_verdicts = sum(d["verdicts"].values())
+        d["discriminatory_rate"] = round(d["verdicts"].get("discriminatory", 0) / total_verdicts * 100, 1) if total_verdicts else 0
+        d["tone_modulated_rate"] = round(d["verdicts"].get("tone_modulated", 0) / total_verdicts * 100, 1) if total_verdicts else 0
+        d["consistent_rate"] = round(d["verdicts"].get("consistent", 0) / total_verdicts * 100, 1) if total_verdicts else 0
         # Convert sets/defaultdicts for JSON serialization
         d["probe_ids"] = sorted(d["probe_ids"])
         d["pattern_counts"] = dict(d["pattern_counts"])
         d["risk_tiers"] = dict(d["risk_tiers"])
+        d["verdicts"] = dict(d["verdicts"])
+        d["attributions"] = dict(d["attributions"])
 
     return dict(domains)
 
@@ -143,7 +146,7 @@ def compute_risk_tier_stats(results: list[dict]) -> dict[str, dict]:
     """Compute statistics grouped by risk tier."""
     tiers: dict[str, dict[str, Any]] = defaultdict(lambda: {
         "probes": 0, "deflections": 0, "full_assists": 0,
-        "adr_scores": [], "concern_ratios": [],
+        "concern_ratios": [], "verdicts": defaultdict(int),
     })
 
     for r in results:
@@ -162,14 +165,16 @@ def compute_risk_tier_stats(results: list[dict]) -> dict[str, dict]:
             t["concern_ratios"].append(cr)
 
         diff = r.get("differential", {})
-        if "total_score" in diff and diff["total_score"] >= 0:
-            t["adr_scores"].append(diff["total_score"])
+        if "verdict" in diff:
+            t["verdicts"][diff["verdict"]] += 1
 
     for tier, t in tiers.items():
         t["deflection_rate"] = round(t["deflections"] / t["probes"] * 100, 1) if t["probes"] else 0
         t["full_assist_rate"] = round(t["full_assists"] / t["probes"] * 100, 1) if t["probes"] else 0
-        t["avg_adr"] = round(_mean(t["adr_scores"]), 2)
+        total_verdicts = sum(t["verdicts"].values())
+        t["discriminatory_rate"] = round(t["verdicts"].get("discriminatory", 0) / total_verdicts * 100, 1) if total_verdicts else 0
         t["avg_concern_ratio"] = round(_mean(t["concern_ratios"]), 3)
+        t["verdicts"] = dict(t["verdicts"])
 
     return dict(tiers)
 
@@ -183,71 +188,73 @@ def compute_pattern_frequency(results: list[dict]) -> dict[str, int]:
     return dict(sorted(counts.items(), key=lambda x: -x[1]))
 
 
-def compute_adr_heatmap(results: list[dict]) -> list[dict]:
-    """Compute ADR score data for cross-domain heatmap visualization."""
+def compute_verdict_map(results: list[dict]) -> list[dict]:
+    """Compute per-probe verdict data for cross-domain visualization."""
+    # Verdict severity for sorting: discriminatory first, then tone_modulated, then consistent
+    verdict_severity = {"discriminatory": 2, "tone_modulated": 1, "consistent": 0}
     rows = []
     for r in results:
         diff = r.get("differential", {})
-        if "total_score" not in diff:
+        if "verdict" not in diff:
             continue
+        detail = diff.get("detail", {})
         row = {
             "probe_id": r.get("probe_id", ""),
             "domain": r.get("domain", ""),
             "risk_tier": r.get("risk_tier", ""),
-            "total_score": diff.get("total_score", 0),
-            "constraint_diff": diff.get("constraint_diff", 0),
-            "justification_diff": diff.get("justification_diff", 0),
-            "scope_diff": diff.get("scope_diff", 0),
-            "calibration_diff": diff.get("calibration_diff", 0),
-            "adr_evidence": diff.get("adr_evidence", False),
+            "verdict": diff["verdict"],
+            "behavioral_shift": diff.get("behavioral_shift", "none"),
+            "framing_sensitivity": diff.get("framing_sensitivity", 0),
+            "framing_sensitivity_label": diff.get("framing_sensitivity_label", "negligible"),
+            "constraint_diff": detail.get("constraint_diff", 0),
+            "justification_diff": detail.get("justification_diff", 0),
+            "scope_diff": detail.get("scope_diff", 0),
+            "calibration_diff": detail.get("calibration_diff", 0),
         }
-        # Three-condition decomposed scores
-        if "specificity_score" in diff:
-            row["combined_score"] = diff.get("combined_score", 0)
-            row["specificity_score"] = diff.get("specificity_score", 0)
-            row["credential_score"] = diff.get("credential_score", 0)
-            row["specificity_evidence"] = diff.get("specificity_evidence", False)
-            row["credential_evidence"] = diff.get("credential_evidence", False)
+        # Three-condition attribution
+        if "attribution" in diff:
+            row["attribution"] = diff["attribution"]
+            ve = diff.get("vocabulary_effect", {})
+            ce = diff.get("credential_effect", {})
+            row["vocabulary_sensitivity"] = ve.get("framing_sensitivity", 0)
+            row["credential_sensitivity"] = ce.get("framing_sensitivity", 0)
         rows.append(row)
-    return sorted(rows, key=lambda x: (-x["total_score"], x["domain"]))
+    return sorted(rows, key=lambda x: (-verdict_severity.get(x["verdict"], 0), x["domain"]))
 
 
 def compute_credential_sensitivity(results: list[dict]) -> dict:
     """Analyze how much credential framing changes responses across domains."""
     domain_cred: dict[str, dict] = defaultdict(lambda: {
-        "with_adr": 0, "without_adr": 0, "total": 0,
-        "avg_score_when_adr": [], "scores": [],
-        "specificity_scores": [], "credential_scores": [],
+        "total": 0,
+        "verdicts": defaultdict(int),
+        "attributions": defaultdict(int),
     })
 
     for r in results:
         diff = r.get("differential", {})
-        if "total_score" not in diff:
+        if "verdict" not in diff:
             continue
         domain = r.get("domain", "unknown")
         dc = domain_cred[domain]
         dc["total"] += 1
-        dc["scores"].append(diff["total_score"])
-        if diff.get("adr_evidence"):
-            dc["with_adr"] += 1
-            dc["avg_score_when_adr"].append(diff["total_score"])
-        else:
-            dc["without_adr"] += 1
-        if "specificity_score" in diff:
-            dc["specificity_scores"].append(diff["specificity_score"])
-            dc["credential_scores"].append(diff["credential_score"])
+        dc["verdicts"][diff["verdict"]] += 1
+        if "attribution" in diff:
+            dc["attributions"][diff["attribution"]] += 1
 
     result = {}
     for domain, dc in domain_cred.items():
+        total = dc["total"]
         entry = {
-            "total_probes": dc["total"],
-            "adr_rate": round(dc["with_adr"] / dc["total"] * 100, 1) if dc["total"] else 0,
-            "avg_adr_score": round(_mean(dc["scores"]), 2),
-            "avg_score_when_adr": round(_mean(dc["avg_score_when_adr"]), 2),
+            "total_probes": total,
+            "discriminatory_rate": round(dc["verdicts"].get("discriminatory", 0) / total * 100, 1) if total else 0,
+            "tone_modulated_rate": round(dc["verdicts"].get("tone_modulated", 0) / total * 100, 1) if total else 0,
+            "consistent_rate": round(dc["verdicts"].get("consistent", 0) / total * 100, 1) if total else 0,
+            "verdicts": dict(dc["verdicts"]),
         }
-        if dc["specificity_scores"]:
-            entry["avg_specificity_score"] = round(_mean(dc["specificity_scores"]), 2)
-            entry["avg_credential_score"] = round(_mean(dc["credential_scores"]), 2)
+        if dc["attributions"]:
+            entry["attributions"] = dict(dc["attributions"])
+            entry["credential_driven_count"] = dc["attributions"].get("credential_driven", 0)
+            entry["vocabulary_driven_count"] = dc["attributions"].get("vocabulary_driven", 0)
         result[domain] = entry
     return result
 
@@ -280,7 +287,7 @@ def generate_comparative_analysis(results: list[dict]) -> dict:
     domain_stats = compute_domain_stats(results)
     risk_stats = compute_risk_tier_stats(results)
     pattern_freq = compute_pattern_frequency(results)
-    adr_heatmap = compute_adr_heatmap(results)
+    verdict_map = compute_verdict_map(results)
     cred_sensitivity = compute_credential_sensitivity(results)
     gap_analysis = compute_capability_gap_analysis(results)
 
@@ -288,13 +295,21 @@ def generate_comparative_analysis(results: list[dict]) -> dict:
     total = len(results)
     total_deflections = sum(d["deflections"] for d in domain_stats.values())
     total_full_assists = sum(d["full_assists"] for d in domain_stats.values())
-    total_adr = sum(1 for r in adr_heatmap if r["adr_evidence"])
     total_gaps = sum(d["gaps_confirmed"] for d in gap_analysis.values())
-    all_adr_scores = [r["total_score"] for r in adr_heatmap]
     all_concern_ratios = [
         r.get("stage1", {}).get("concern_ratio", 0)
         for r in results if r.get("stage1", {}).get("concern_ratio") is not None
     ]
+
+    # Aggregate verdict distribution
+    verdict_dist = defaultdict(int)
+    attribution_dist = defaultdict(int)
+    for r in verdict_map:
+        verdict_dist[r["verdict"]] += 1
+        if "attribution" in r:
+            attribution_dist[r["attribution"]] += 1
+
+    total_tested = len(verdict_map)
 
     return {
         "global_summary": {
@@ -304,17 +319,18 @@ def generate_comparative_analysis(results: list[dict]) -> dict:
             "total_full_assists": total_full_assists,
             "deflection_rate": round(total_deflections / total * 100, 1) if total else 0,
             "full_assist_rate": round(total_full_assists / total * 100, 1) if total else 0,
-            "total_adr_evidence": total_adr,
-            "adr_rate": round(total_adr / len(adr_heatmap) * 100, 1) if adr_heatmap else 0,
             "total_capability_gaps": total_gaps,
-            "avg_adr_score": round(_mean(all_adr_scores), 2),
-            "median_adr_score": round(_median(all_adr_scores), 1),
             "avg_concern_ratio": round(_mean(all_concern_ratios), 3),
+            "verdict_distribution": dict(verdict_dist),
+            "attribution_distribution": dict(attribution_dist),
+            "discriminatory_rate": round(verdict_dist.get("discriminatory", 0) / total_tested * 100, 1) if total_tested else 0,
+            "tone_modulated_rate": round(verdict_dist.get("tone_modulated", 0) / total_tested * 100, 1) if total_tested else 0,
+            "consistent_rate": round(verdict_dist.get("consistent", 0) / total_tested * 100, 1) if total_tested else 0,
         },
         "domain_stats": domain_stats,
         "risk_tier_stats": risk_stats,
         "pattern_frequency": pattern_freq,
-        "adr_heatmap": adr_heatmap,
+        "verdict_map": verdict_map,
         "credential_sensitivity": cred_sensitivity,
         "capability_gap_analysis": gap_analysis,
     }

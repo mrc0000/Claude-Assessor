@@ -229,10 +229,10 @@ def run_suite(
     print(f"    HTML:     {html_file}")
 
     deflections = sum(1 for r in all_results if r.get("stage1", {}).get("classification") == "deflection")
-    adr = sum(1 for r in all_results if r.get("differential", {}).get("adr_evidence"))
+    discriminatory = sum(1 for r in all_results if r.get("differential", {}).get("verdict") == "discriminatory")
     gaps = sum(1 for r in all_results if r.get("capability_gap", {}).get("gap_confirmed"))
     print(f"    Deflections: {deflections}/{len(all_results)}")
-    print(f"    ADR evidence: {adr}/{len(all_results)}")
+    print(f"    Discriminatory: {discriminatory}/{len(all_results)}")
     print(f"    Capability gaps: {gaps}/{len(all_results)}")
 
     return all_results
@@ -267,15 +267,16 @@ def report_only(args) -> None:
     print(f"  Domains tested:    {gs['total_domains']}")
     print(f"  Deflection rate:   {gs['deflection_rate']}%")
     print(f"  Full assist rate:  {gs['full_assist_rate']}%")
-    print(f"  ADR evidence rate: {gs['adr_rate']}%")
-    print(f"  Mean ADR score:    {gs['avg_adr_score']}/8")
+    print(f"  Discriminatory:    {gs['discriminatory_rate']}%")
+    print(f"  Tone modulated:    {gs['tone_modulated_rate']}%")
+    print(f"  Consistent:        {gs['consistent_rate']}%")
     print(f"  Capability gaps:   {gs['total_capability_gaps']}")
     print(f"  Avg concern ratio: {gs['avg_concern_ratio']}")
 
     for domain, ds in sorted(analysis["domain_stats"].items()):
         print(f"  {domain:15s}  deflect={ds['deflection_rate']:5.1f}%  "
               f"full={ds['full_assist_rate']:5.1f}%  "
-              f"adr={ds['avg_adr']:.1f}  "
+              f"discrim={ds['discriminatory_rate']:5.1f}%  "
               f"concern={ds['avg_concern_ratio']:.3f}  "
               f"gaps={ds['gaps_confirmed']}")
 
@@ -408,8 +409,9 @@ def main():
         print(f"  Domains tested:    {gs['total_domains']}")
         print(f"  Deflection rate:   {gs['deflection_rate']}%")
         print(f"  Full assist rate:  {gs['full_assist_rate']}%")
-        print(f"  ADR evidence rate: {gs['adr_rate']}%")
-        print(f"  Mean ADR score:    {gs['avg_adr_score']}/8")
+        print(f"  Discriminatory:    {gs['discriminatory_rate']}%")
+        print(f"  Tone modulated:    {gs['tone_modulated_rate']}%")
+        print(f"  Consistent:        {gs['consistent_rate']}%")
         print(f"  Capability gaps:   {gs['total_capability_gaps']}")
         print(f"  Avg concern ratio: {gs['avg_concern_ratio']}")
 
@@ -418,7 +420,7 @@ def main():
         for domain, ds in sorted(analysis["domain_stats"].items()):
             print(f"  {domain:15s}  deflect={ds['deflection_rate']:5.1f}%  "
                   f"full={ds['full_assist_rate']:5.1f}%  "
-                  f"adr={ds['avg_adr']:.1f}  "
+                  f"discrim={ds['discriminatory_rate']:5.1f}%  "
                   f"concern={ds['avg_concern_ratio']:.3f}  "
                   f"gaps={ds['gaps_confirmed']}")
 

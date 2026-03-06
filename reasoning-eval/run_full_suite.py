@@ -170,7 +170,7 @@ def run_suite(
     label = suite_def["label"]
     if args.variance > 1:
         label += f"_v{args.variance}"
-    partial_file = config.results_dir / f"_partial_{label}.json"
+    partial_file = Path(config.results_dir) / f"_partial_{label}.json"
 
     # Resume from partial results if available
     start_variance = 0
@@ -297,17 +297,38 @@ def main():
         config.validate()
         runner = ProbeRunner(config)
 
-    # Run all suites (with per-suite error isolation)
+    # Persistent combined results file — survives across sessions.
+    # Each suite appends its results here so the comparative analysis
+    # can always see the full picture even if we run one suite at a time.
+    combined_file = Path(config.results_dir) / "_combined_all_suites.json"
     all_combined_results = []
+    if combined_file.exists():
+        all_combined_results = json.loads(combined_file.read_text())
+        existing_suites = set(r.get("_suite", "") for r in all_combined_results)
+        print(f"  [combined] Loaded {len(all_combined_results)} existing results "
+              f"from {', '.join(sorted(existing_suites))}")
+
     suite_failures = []
     suite_start = time.time()
 
     for suite_key in suites_to_run:
+        # Skip suites already in the combined file (unless re-running intentionally)
+        existing_for_suite = [r for r in all_combined_results if r.get("_suite") == suite_key]
+        if existing_for_suite and not getattr(args, 'resume_partial', False):
+            print(f"\n  [combined] Suite '{suite_key}' already has {len(existing_for_suite)} "
+                  f"results in combined file, skipping. Use --resume-partial to re-run.")
+            continue
+
         try:
             suite_results = run_suite(
                 suite_key, SUITES[suite_key], runner, config, args
             )
+            # Remove any old results for this suite before appending fresh ones
+            all_combined_results = [r for r in all_combined_results if r.get("_suite") != suite_key]
             all_combined_results.extend(suite_results)
+            # Flush combined file after each suite
+            combined_file.write_text(json.dumps(all_combined_results, indent=2, default=str))
+            print(f"  [combined] {len(all_combined_results)} total results saved to {combined_file.name}")
         except Exception as exc:
             print(f"\n  [SUITE FAILURE] Suite '{suite_key}' failed: {exc}")
             suite_failures.append({"suite": suite_key, "error": str(exc)})

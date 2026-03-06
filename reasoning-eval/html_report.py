@@ -112,10 +112,21 @@ def generate_html_report(results: list[dict], model: str) -> str:
         </tr>""")
 
     diff_rows = []
+    has_decomposed = any(
+        "specificity_score" in r.get("differential", {}) for r in results
+    )
     for r in results:
         diff = r.get("differential", {})
         if "total_score" not in diff:
             continue
+        decomp_cells = ""
+        if has_decomposed:
+            spec = diff.get("specificity_score", "—")
+            cred = diff.get("credential_score", "—")
+            decomp_cells = (
+                f'<td class="num">{_score_bar(spec, 8) if isinstance(spec, int) else spec}</td>'
+                f'<td class="num">{_score_bar(cred, 8) if isinstance(cred, int) else cred}</td>'
+            )
         diff_rows.append(f"""
         <tr>
             <td><code>{_esc(r.get('probe_id', ''))}</code></td>
@@ -125,6 +136,7 @@ def generate_html_report(results: list[dict], model: str) -> str:
             <td class="num">{_score_bar(diff.get('scope_diff', 0))}</td>
             <td class="num">{_score_bar(diff.get('calibration_diff', 0))}</td>
             <td class="num">{_adr_badge(diff.get('total_score', 0), diff.get('adr_evidence', False))}</td>
+            {decomp_cells}
         </tr>""")
 
     pattern_items = ""
@@ -533,7 +545,8 @@ summary:hover {{ text-decoration: underline; }}
             <tr>
                 <th>Probe</th><th>Domain</th><th class="num">Constraint</th>
                 <th class="num">Justification</th><th class="num">Scope</th>
-                <th class="num">Calibration</th><th class="num">Score</th>
+                <th class="num">Calibration</th><th class="num">Combined</th>
+                {"<th class='num'>Specificity</th><th class='num'>Credential</th>" if has_decomposed else ""}
             </tr>
         </thead>
         <tbody>{''.join(diff_rows)}</tbody>
@@ -611,11 +624,25 @@ def _render_probe_card(r: dict) -> str:
         score = diff.get("total_score", 0)
         evidence = diff.get("adr_evidence", False)
         diff_html += f'<div class="stage-label">Differential Comparison {_adr_badge(score, evidence)}</div>'
-        diff_html += '<div class="diff-compare">'
-        diff_html += f'<div class="diff-col"><h4>Condition A (no credential)</h4>'
+
+        # Decomposed scores when three-condition design is active
+        if "specificity_score" in diff:
+            diff_html += '<div style="display:flex;gap:0.75rem;margin:0.5rem 0;flex-wrap:wrap">'
+            diff_html += f'<div style="font-size:0.75rem;color:var(--muted)">Combined(A↔B): <strong style="color:var(--text)">{diff["combined_score"]}/8</strong></div>'
+            diff_html += f'<div style="font-size:0.75rem;color:var(--muted)">Specificity(A↔C): <strong style="color:var(--text)">{diff["specificity_score"]}/8</strong></div>'
+            diff_html += f'<div style="font-size:0.75rem;color:var(--muted)">Credential(B↔C): <strong style="color:var(--text)">{diff["credential_score"]}/8</strong></div>'
+            diff_html += '</div>'
+
+        has_c = diff.get("condition_c_response")
+        cols = "1fr 1fr 1fr" if has_c else "1fr 1fr"
+        diff_html += f'<div class="diff-compare" style="grid-template-columns:{cols}">'
+        diff_html += f'<div class="diff-col"><h4>Condition A (neutral)</h4>'
         diff_html += f'<div class="response-block compact">{_esc(diff.get("condition_a_response", ""))}</div></div>'
-        diff_html += f'<div class="diff-col"><h4>Condition B (with credential)</h4>'
+        diff_html += f'<div class="diff-col"><h4>Condition B (credential)</h4>'
         diff_html += f'<div class="response-block compact">{_esc(diff.get("condition_b_response", ""))}</div></div>'
+        if has_c:
+            diff_html += f'<div class="diff-col"><h4>Condition C (technical, no credential)</h4>'
+            diff_html += f'<div class="response-block compact">{_esc(diff.get("condition_c_response", ""))}</div></div>'
         diff_html += '</div>'
 
     return f"""

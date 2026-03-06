@@ -135,7 +135,7 @@ def _differential_table(results: list[dict]) -> list[dict]:
         diff = r.get("differential", {})
         if "total_score" not in diff:
             continue
-        rows.append({
+        row = {
             "probe_id": r.get("probe_id", ""),
             "domain": r.get("domain", ""),
             "constraint_diff": diff.get("constraint_diff", 0),
@@ -144,7 +144,15 @@ def _differential_table(results: list[dict]) -> list[dict]:
             "calibration_diff": diff.get("calibration_diff", 0),
             "total_score": diff.get("total_score", 0),
             "adr_evidence": diff.get("adr_evidence", False),
-        })
+        }
+        # Three-condition decomposition
+        if "specificity_score" in diff:
+            row["combined_score"] = diff.get("combined_score", 0)
+            row["specificity_score"] = diff.get("specificity_score", 0)
+            row["credential_score"] = diff.get("credential_score", 0)
+            row["specificity_evidence"] = diff.get("specificity_evidence", False)
+            row["credential_evidence"] = diff.get("credential_evidence", False)
+        rows.append(row)
     return rows
 
 
@@ -208,21 +216,40 @@ def generate_markdown_report(results: list[dict], model: str) -> str:
     # Differential results table
     diff_rows = _differential_table(results)
     if diff_rows:
+        has_decomposed = any("specificity_score" in row for row in diff_rows)
         lines.append("## Differential Results")
-        lines.append(
-            "| Probe | Domain | Constraint | Justification | Scope | Calibration | Total | ADR? |"
-        )
-        lines.append(
-            "|-------|--------|-----------|---------------|-------|-------------|-------|------|"
-        )
-        for row in diff_rows:
-            adr_flag = "YES" if row["adr_evidence"] else "no"
+        if has_decomposed:
             lines.append(
-                f"| {row['probe_id']} | {row['domain']} | "
-                f"{row['constraint_diff']} | {row['justification_diff']} | "
-                f"{row['scope_diff']} | {row['calibration_diff']} | "
-                f"{row['total_score']} | {adr_flag} |"
+                "| Probe | Domain | Constraint | Justification | Scope | Calibration | Combined | Specificity | Credential | ADR? |"
             )
+            lines.append(
+                "|-------|--------|-----------|---------------|-------|-------------|----------|-------------|------------|------|"
+            )
+            for row in diff_rows:
+                adr_flag = "YES" if row["adr_evidence"] else "no"
+                spec = row.get("specificity_score", "—")
+                cred = row.get("credential_score", "—")
+                lines.append(
+                    f"| {row['probe_id']} | {row['domain']} | "
+                    f"{row['constraint_diff']} | {row['justification_diff']} | "
+                    f"{row['scope_diff']} | {row['calibration_diff']} | "
+                    f"{row['total_score']} | {spec} | {cred} | {adr_flag} |"
+                )
+        else:
+            lines.append(
+                "| Probe | Domain | Constraint | Justification | Scope | Calibration | Total | ADR? |"
+            )
+            lines.append(
+                "|-------|--------|-----------|---------------|-------|-------------|-------|------|"
+            )
+            for row in diff_rows:
+                adr_flag = "YES" if row["adr_evidence"] else "no"
+                lines.append(
+                    f"| {row['probe_id']} | {row['domain']} | "
+                    f"{row['constraint_diff']} | {row['justification_diff']} | "
+                    f"{row['scope_diff']} | {row['calibration_diff']} | "
+                    f"{row['total_score']} | {adr_flag} |"
+                )
         lines.append("")
 
     # Per-probe detail
@@ -284,10 +311,14 @@ def generate_markdown_report(results: list[dict], model: str) -> str:
         diff = r.get("differential", {})
         if diff and "total_score" in diff:
             adr = "YES" if diff.get("adr_evidence") else "no"
-            lines.append(
-                f"**Differential Score:** {diff['total_score']}/8 "
-                f"(ADR evidence: {adr})  "
-            )
+            score_line = f"**Differential Score:** {diff['total_score']}/8 (ADR evidence: {adr})"
+            if "specificity_score" in diff:
+                score_line += (
+                    f"  \n  Combined(A↔B): {diff['combined_score']}/8"
+                    f" | Specificity(A↔C): {diff['specificity_score']}/8"
+                    f" | Credential(B↔C): {diff['credential_score']}/8"
+                )
+            lines.append(score_line + "  ")
             lines.append("")
 
         lines.append("---")

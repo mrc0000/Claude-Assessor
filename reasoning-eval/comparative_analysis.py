@@ -106,6 +106,9 @@ def compute_domain_stats(results: list[dict]) -> dict[str, dict]:
         diff = r.get("differential", {})
         if "total_score" in diff and diff["total_score"] >= 0:
             d["adr_scores"].append(diff["total_score"])
+        if "specificity_score" in diff:
+            d.setdefault("specificity_scores", []).append(diff["specificity_score"])
+            d.setdefault("credential_scores", []).append(diff["credential_score"])
 
         for p in r.get("stage1", {}).get("patterns", []):
             d["pattern_counts"][p] += 1
@@ -126,6 +129,8 @@ def compute_domain_stats(results: list[dict]) -> dict[str, dict]:
         d["gap_rate"] = round(d["gaps_confirmed"] / d["probes"] * 100, 1) if d["probes"] else 0
         d["shift_rate"] = round(d["justification_shifts"] / d["total_stage3_probes"] * 100, 1) if d["total_stage3_probes"] else 0
         d["unique_probes"] = len(d["probe_ids"])
+        d["avg_specificity"] = round(_mean(d.get("specificity_scores", [])), 2)
+        d["avg_credential"] = round(_mean(d.get("credential_scores", [])), 2)
         # Convert sets/defaultdicts for JSON serialization
         d["probe_ids"] = sorted(d["probe_ids"])
         d["pattern_counts"] = dict(d["pattern_counts"])
@@ -185,7 +190,7 @@ def compute_adr_heatmap(results: list[dict]) -> list[dict]:
         diff = r.get("differential", {})
         if "total_score" not in diff:
             continue
-        rows.append({
+        row = {
             "probe_id": r.get("probe_id", ""),
             "domain": r.get("domain", ""),
             "risk_tier": r.get("risk_tier", ""),
@@ -195,7 +200,15 @@ def compute_adr_heatmap(results: list[dict]) -> list[dict]:
             "scope_diff": diff.get("scope_diff", 0),
             "calibration_diff": diff.get("calibration_diff", 0),
             "adr_evidence": diff.get("adr_evidence", False),
-        })
+        }
+        # Three-condition decomposed scores
+        if "specificity_score" in diff:
+            row["combined_score"] = diff.get("combined_score", 0)
+            row["specificity_score"] = diff.get("specificity_score", 0)
+            row["credential_score"] = diff.get("credential_score", 0)
+            row["specificity_evidence"] = diff.get("specificity_evidence", False)
+            row["credential_evidence"] = diff.get("credential_evidence", False)
+        rows.append(row)
     return sorted(rows, key=lambda x: (-x["total_score"], x["domain"]))
 
 
@@ -204,6 +217,7 @@ def compute_credential_sensitivity(results: list[dict]) -> dict:
     domain_cred: dict[str, dict] = defaultdict(lambda: {
         "with_adr": 0, "without_adr": 0, "total": 0,
         "avg_score_when_adr": [], "scores": [],
+        "specificity_scores": [], "credential_scores": [],
     })
 
     for r in results:
@@ -219,15 +233,22 @@ def compute_credential_sensitivity(results: list[dict]) -> dict:
             dc["avg_score_when_adr"].append(diff["total_score"])
         else:
             dc["without_adr"] += 1
+        if "specificity_score" in diff:
+            dc["specificity_scores"].append(diff["specificity_score"])
+            dc["credential_scores"].append(diff["credential_score"])
 
     result = {}
     for domain, dc in domain_cred.items():
-        result[domain] = {
+        entry = {
             "total_probes": dc["total"],
             "adr_rate": round(dc["with_adr"] / dc["total"] * 100, 1) if dc["total"] else 0,
             "avg_adr_score": round(_mean(dc["scores"]), 2),
             "avg_score_when_adr": round(_mean(dc["avg_score_when_adr"]), 2),
         }
+        if dc["specificity_scores"]:
+            entry["avg_specificity_score"] = round(_mean(dc["specificity_scores"]), 2)
+            entry["avg_credential_score"] = round(_mean(dc["credential_scores"]), 2)
+        result[domain] = entry
     return result
 
 

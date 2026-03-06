@@ -99,11 +99,20 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
         <div class="stat-card"><div class="stat-value">{gs['total_adr_evidence']}/{len(hm)}</div><div class="stat-label">ADR Flagged / Tested</div></div>
     </div>"""
 
+    # Detect whether three-condition data is available
+    has_decomposed = any(d.get("avg_specificity", 0) > 0 or d.get("avg_credential", 0) > 0 for d in ds.values())
+
     # Domain comparison table
     domain_rows = ""
     for domain in sorted(ds.keys()):
         d = ds[domain]
         dc = _domain_color(domain)
+        decomp_cells = ""
+        if has_decomposed:
+            decomp_cells = (
+                f'<td class="num">{_score_cell(d.get("avg_specificity", 0))}</td>'
+                f'<td class="num">{_score_cell(d.get("avg_credential", 0))}</td>'
+            )
         domain_rows += f"""
         <tr>
             <td><span class="domain-tag" style="border-color:{dc};color:{dc};background:rgba({_hex_to_rgb(dc)},0.15)">{_esc(domain)}</span></td>
@@ -112,6 +121,7 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
             <td class="num">{_pct_bar(d['full_assist_rate'], color='#22c55e')}</td>
             <td class="num">{d['avg_concern_ratio']}</td>
             <td class="num">{_score_cell(d['avg_adr'])}</td>
+            {decomp_cells}
             <td class="num">{d['gap_rate']}%</td>
             <td class="num">{d['shift_rate']}%</td>
         </tr>"""
@@ -134,11 +144,17 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
         </tr>"""
 
     # ADR heatmap
+    hm_has_decomp = any("specificity_score" in h for h in hm)
     heatmap_rows = ""
     for h in hm:
         dc = _domain_color(h["domain"])
         rc = _risk_color(h["risk_tier"])
         adr_class = "adr-high" if h["total_score"] >= 4 else ("adr-med" if h["adr_evidence"] else "adr-low")
+        decomp_cells = ""
+        if hm_has_decomp:
+            spec = h.get("specificity_score", "—")
+            cred = h.get("credential_score", "—")
+            decomp_cells = f'<td class="num">{spec}</td><td class="num">{cred}</td>'
         heatmap_rows += f"""
         <tr class="{adr_class}">
             <td><code>{_esc(h['probe_id'])}</code></td>
@@ -149,14 +165,21 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
             <td class="num hm-cell" style="--cell-intensity:{h['scope_diff']/2}">{h['scope_diff']}</td>
             <td class="num hm-cell" style="--cell-intensity:{h['calibration_diff']/2}">{h['calibration_diff']}</td>
             <td class="num"><strong>{h['total_score']}/8</strong></td>
+            {decomp_cells}
             <td class="num">{'<span class="flag-yes">YES</span>' if h['adr_evidence'] else '<span class="flag-no">no</span>'}</td>
         </tr>"""
 
     # Credential sensitivity
+    cs_has_decomp = any("avg_specificity_score" in c for c in cs.values())
     cred_rows = ""
     for domain in sorted(cs.keys()):
         c = cs[domain]
         dc = _domain_color(domain)
+        decomp_cells = ""
+        if cs_has_decomp:
+            spec = _score_cell(c["avg_specificity_score"]) if "avg_specificity_score" in c else "—"
+            cred_val = _score_cell(c["avg_credential_score"]) if "avg_credential_score" in c else "—"
+            decomp_cells = f'<td class="num">{spec}</td><td class="num">{cred_val}</td>'
         cred_rows += f"""
         <tr>
             <td><span class="domain-tag" style="border-color:{dc};color:{dc};background:rgba({_hex_to_rgb(dc)},0.15)">{_esc(domain)}</span></td>
@@ -164,6 +187,7 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
             <td class="num">{_pct_bar(c['adr_rate'], color='#f97316')}</td>
             <td class="num">{_score_cell(c['avg_adr_score'])}</td>
             <td class="num">{_score_cell(c['avg_score_when_adr']) if c['avg_score_when_adr'] else '—'}</td>
+            {decomp_cells}
         </tr>"""
 
     # Capability gaps
@@ -230,6 +254,9 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
         implications_truthfulness=implications_truthfulness,
         implications_reasoning=implications_reasoning,
         analysis=analysis,
+        has_decomposed=has_decomposed,
+        hm_has_decomp=hm_has_decomp,
+        cs_has_decomp=cs_has_decomp,
     )
 
 
@@ -754,7 +781,9 @@ tr:hover {{ background:var(--surface2); }}
         <thead><tr>
             <th>Domain</th><th class="num">Probes</th><th class="num">Deflection Rate</th>
             <th class="num">Full Assist Rate</th><th class="num">Avg Concern</th>
-            <th class="num">Avg ADR</th><th class="num">Gap Rate</th><th class="num">Shift Rate</th>
+            <th class="num">Avg ADR</th>
+            {'<th class="num">Specificity</th><th class="num">Credential</th>' if ctx.get('has_decomposed') else ''}
+            <th class="num">Gap Rate</th><th class="num">Shift Rate</th>
         </tr></thead>
         <tbody>{ctx['domain_rows']}</tbody>
     </table>
@@ -786,7 +815,9 @@ tr:hover {{ background:var(--surface2); }}
             <th>Probe</th><th>Domain</th><th>Risk</th>
             <th class="num">Constraint</th><th class="num">Justification</th>
             <th class="num">Scope</th><th class="num">Calibration</th>
-            <th class="num">Total</th><th class="num">ADR?</th>
+            <th class="num">Combined</th>
+            {'<th class="num">Specificity</th><th class="num">Credential</th>' if ctx.get('hm_has_decomp') else ''}
+            <th class="num">ADR?</th>
         </tr></thead>
         <tbody>{ctx['heatmap_rows']}</tbody>
     </table>
@@ -799,6 +830,7 @@ tr:hover {{ background:var(--surface2); }}
         <thead><tr>
             <th>Domain</th><th class="num">Probes</th><th class="num">ADR Rate</th>
             <th class="num">Avg Score</th><th class="num">Avg When ADR</th>
+            {'<th class="num">Avg Specificity</th><th class="num">Avg Credential</th>' if ctx.get('cs_has_decomp') else ''}
         </tr></thead>
         <tbody>{ctx['cred_rows']}</tbody>
     </table>

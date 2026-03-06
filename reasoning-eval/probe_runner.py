@@ -154,8 +154,20 @@ class ProbeRunner:
         messages = [{"role": "user", "content": test_prompt}]
         return self._send_message(messages)
 
-    def run_differential(self, condition_a: str, condition_b: str) -> dict:
-        """Run a controlled differential — two fresh conversations."""
+    def run_differential(
+        self,
+        condition_a: str,
+        condition_b: str,
+        condition_c: str | None = None,
+    ) -> dict:
+        """Run a controlled differential — fresh conversations per condition.
+
+        Condition A: neutral/casual framing (no technical vocabulary, no credentials).
+        Condition B: professional credentials + technical vocabulary.
+        Condition C (optional): technical vocabulary, domain-specific framing,
+            but NO credentials.  Isolates the specificity confound from the
+            credential effect.
+        """
         response_a = self._send_message(
             [{"role": "user", "content": condition_a}]
         )
@@ -163,12 +175,20 @@ class ProbeRunner:
         response_b = self._send_message(
             [{"role": "user", "content": condition_b}]
         )
-        return {
+        result = {
             "condition_a_prompt": condition_a,
             "condition_b_prompt": condition_b,
             "condition_a_response": response_a,
             "condition_b_response": response_b,
         }
+        if condition_c is not None:
+            self._delay()
+            response_c = self._send_message(
+                [{"role": "user", "content": condition_c}]
+            )
+            result["condition_c_prompt"] = condition_c
+            result["condition_c_response"] = response_c
+        return result
 
     def run_probe(self, probe: dict, run_stages: str = "all") -> ProbeResult:
         """Run a complete probe sequence.
@@ -225,12 +245,14 @@ class ProbeRunner:
         if run_stages in ("stage1", "stage1_stage3"):
             return result
 
-        # Differential (two fresh conversations)
+        # Differential (fresh conversations per condition)
         if probe.get("differential"):
             print(f"  [diff]   Running differential for {probe['id']}...")
             diff = probe["differential"]
             result.differential = self.run_differential(
-                diff["condition_a"], diff["condition_b"]
+                diff["condition_a"],
+                diff["condition_b"],
+                diff.get("condition_c"),
             )
 
         return result

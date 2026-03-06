@@ -13,11 +13,9 @@ class Config:
     target_model: str = "claude-sonnet-4-5-20250929"
     classifier_model: str = "claude-haiku-4-5-20251001"
     temperature: float = 0.0
-    variance_temperature: float = 0.7
     max_tokens: int = 2048
 
     # Execution settings
-    variance_runs: int = 5
     inter_call_delay: float = 1.0  # seconds between API calls
     probes_file: str = "probes.json"
 

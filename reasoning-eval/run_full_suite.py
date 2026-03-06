@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / ".env")
 
 from config import Config
-from probe_runner import ProbeRunner, load_probes
+from probe_runner import ProbeRunner, load_probes, filter_probes
 from analyzer import analyze_probe_result, load_eval_config, get_eval_config_snapshot
 from reporter import save_results
 from html_report import save_html_report
@@ -116,21 +116,16 @@ def parse_args() -> argparse.Namespace:
         help="Resume from partial results files left by interrupted runs. "
              "Skips suites that already have a _partial_{label}.json with all variance runs.",
     )
+    parser.add_argument(
+        "--report-only", action="store_true",
+        help="Skip running probes. Generate comparative report from existing "
+             "_combined_all_suites.json results file.",
+    )
+    parser.add_argument(
+        "--report-label", default="full-suite",
+        help="Label for comparative report output files (default: full-suite)",
+    )
     return parser.parse_args()
-
-
-def _filter_probes(
-    probes: list[dict],
-    probe_ids: list[str] | None = None,
-    domains: list[str] | None = None,
-) -> list[dict]:
-    """Filter probes by ID or domain."""
-    filtered = probes
-    if probe_ids:
-        filtered = [p for p in filtered if p["id"] in probe_ids]
-    if domains:
-        filtered = [p for p in filtered if p["domain"] in domains]
-    return filtered
 
 
 def run_suite(
@@ -148,7 +143,7 @@ def run_suite(
     probes = load_probes(suite_def["file"])
 
     # Apply probe-level filters
-    probes = _filter_probes(probes, getattr(args, 'probes', None), getattr(args, 'domains', None))
+    probes = filter_probes(probes, getattr(args, 'probes', None), getattr(args, 'domains', None))
     if not probes:
         print(f"  No probes match filters for suite '{suite_key}', skipping.")
         return []
@@ -243,8 +238,54 @@ def run_suite(
     return all_results
 
 
+def report_only(args) -> None:
+    """Generate comparative report from existing combined results file."""
+    config = Config(target_model=args.model)
+    combined_file = Path(config.results_dir) / "_combined_all_suites.json"
+
+    if not combined_file.exists():
+        print(f"No combined results file found at {combined_file}")
+        print("Run suites first, or check that results/_combined_all_suites.json exists.")
+        sys.exit(1)
+
+    all_results = json.loads(combined_file.read_text())
+    suites = sorted(set(r.get("_suite", "unknown") for r in all_results))
+    print(f"Generating comparative report from {len(all_results)} results")
+    print(f"  Suites: {', '.join(suites)}")
+
+    load_eval_config()
+
+    comp_path = save_comparative_report(
+        all_results, model=args.model, label=args.report_label,
+    )
+    print(f"  Comparative HTML: {comp_path}")
+    print(f"  Comparative JSON: {comp_path.replace('.html', '.json')}")
+
+    analysis = generate_comparative_analysis(all_results)
+    gs = analysis["global_summary"]
+    print(f"\n  === COMPARATIVE SUMMARY ===")
+    print(f"  Domains tested:    {gs['total_domains']}")
+    print(f"  Deflection rate:   {gs['deflection_rate']}%")
+    print(f"  Full assist rate:  {gs['full_assist_rate']}%")
+    print(f"  ADR evidence rate: {gs['adr_rate']}%")
+    print(f"  Mean ADR score:    {gs['avg_adr_score']}/8")
+    print(f"  Capability gaps:   {gs['total_capability_gaps']}")
+    print(f"  Avg concern ratio: {gs['avg_concern_ratio']}")
+
+    for domain, ds in sorted(analysis["domain_stats"].items()):
+        print(f"  {domain:15s}  deflect={ds['deflection_rate']:5.1f}%  "
+              f"full={ds['full_assist_rate']:5.1f}%  "
+              f"adr={ds['avg_adr']:.1f}  "
+              f"concern={ds['avg_concern_ratio']:.3f}  "
+              f"gaps={ds['gaps_confirmed']}")
+
+
 def main():
     args = parse_args()
+
+    if args.report_only:
+        report_only(args)
+        return
 
     # Determine which suites to run
     if "all" in args.suites:
@@ -323,9 +364,14 @@ def main():
             suite_results = run_suite(
                 suite_key, SUITES[suite_key], runner, config, args
             )
+            # Only add results that have actual responses (skip empty/failed probes)
+            valid_results = [r for r in suite_results if r.get("stage1", {}).get("response")]
+            if not valid_results:
+                print(f"  [combined] Suite '{suite_key}' produced no valid results, skipping combined update.")
+                continue
             # Remove any old results for this suite before appending fresh ones
             all_combined_results = [r for r in all_combined_results if r.get("_suite") != suite_key]
-            all_combined_results.extend(suite_results)
+            all_combined_results.extend(valid_results)
             # Flush combined file after each suite
             combined_file.write_text(json.dumps(all_combined_results, indent=2, default=str))
             print(f"  [combined] {len(all_combined_results)} total results saved to {combined_file.name}")

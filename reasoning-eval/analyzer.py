@@ -3,56 +3,12 @@
 import json
 import logging
 import re
-import time
 from pathlib import Path
 
 from config import Config
+from retry import api_call_with_retry
 
 logger = logging.getLogger(__name__)
-
-
-def _api_call_with_retry(client, config: Config, **kwargs) -> "anthropic.types.Message":
-    """Make an Anthropic API call with exponential backoff retry.
-
-    Handles RateLimitError (429), overloaded (529), and connection errors.
-    """
-    import anthropic
-
-    last_error: Exception | None = None
-    for attempt in range(1, config.max_retries + 1):
-        try:
-            return client.messages.create(timeout=config.api_timeout, **kwargs)
-        except anthropic.RateLimitError as exc:
-            last_error = exc
-            delay = config.retry_base_delay * (2 ** (attempt - 1))
-            logger.warning(
-                "Classifier rate limited (429), attempt %d/%d. Retrying in %.1fs...",
-                attempt, config.max_retries, delay,
-            )
-            time.sleep(delay)
-        except anthropic.APIStatusError as exc:
-            if exc.status_code == 529 and config.retry_on_overload:
-                last_error = exc
-                delay = config.retry_base_delay * (2 ** (attempt - 1))
-                logger.warning(
-                    "Classifier API overloaded (529), attempt %d/%d. Retrying in %.1fs...",
-                    attempt, config.max_retries, delay,
-                )
-                time.sleep(delay)
-            else:
-                raise
-        except anthropic.APIConnectionError as exc:
-            last_error = exc
-            delay = config.retry_base_delay * (2 ** (attempt - 1))
-            logger.warning(
-                "Classifier connection error, attempt %d/%d. Retrying in %.1fs...",
-                attempt, config.max_retries, delay,
-            )
-            time.sleep(delay)
-
-    raise RuntimeError(
-        f"Classifier API call failed after {config.max_retries} retries"
-    ) from last_error
 
 
 # ──────────────────────────────────────────────
@@ -213,8 +169,8 @@ def classify_response_llm(
     classification_input = _get_classification_prompt().format(
         original_question=prompt, model_response=response_text
     )
-    result = _api_call_with_retry(
-        client, config,
+    result = api_call_with_retry(
+        client, config, label="Classifier",
         model=config.classifier_model,
         max_tokens=1024,
         temperature=0.0,
@@ -495,8 +451,8 @@ def analyze_differential_llm(diff_data: dict, config: Config) -> dict:
         condition_b_prompt=diff_data["condition_b_prompt"],
         response_b=diff_data["condition_b_response"],
     )
-    result = _api_call_with_retry(
-        client, config,
+    result = api_call_with_retry(
+        client, config, label="Classifier",
         model=config.classifier_model,
         max_tokens=1024,
         temperature=0.0,

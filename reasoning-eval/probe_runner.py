@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from config import Config
+from retry import api_call_with_retry
 
 logger = logging.getLogger(__name__)
 
@@ -52,72 +53,16 @@ class ProbeRunner:
     def _send_message(
         self, messages: list[dict], temperature: float | None = None
     ) -> str:
-        """Send a message to the API and return the response text.
-
-        Retries with exponential backoff on rate limit (429) and overloaded
-        errors, up to config.max_retries attempts.
-        """
-        import anthropic
-
+        """Send a message to the API and return the response text."""
         temp = temperature if temperature is not None else self.config.temperature
-        last_error: Exception | None = None
-
-        for attempt in range(1, self.config.max_retries + 1):
-            try:
-                response = self.client.messages.create(
-                    model=self.config.target_model,
-                    max_tokens=self.config.max_tokens,
-                    temperature=temp,
-                    messages=messages,
-                    timeout=self.config.api_timeout,
-                )
-                return response.content[0].text
-            except anthropic.RateLimitError as exc:
-                last_error = exc
-                delay = self.config.retry_base_delay * (2 ** (attempt - 1))
-                logger.warning(
-                    "Rate limited (429) on attempt %d/%d. "
-                    "Retrying in %.1fs...",
-                    attempt, self.config.max_retries, delay,
-                )
-                print(
-                    f"  [retry] Rate limited, attempt {attempt}/{self.config.max_retries}. "
-                    f"Waiting {delay:.0f}s..."
-                )
-                time.sleep(delay)
-            except anthropic.APIStatusError as exc:
-                if exc.status_code == 529 and self.config.retry_on_overload:
-                    last_error = exc
-                    delay = self.config.retry_base_delay * (2 ** (attempt - 1))
-                    logger.warning(
-                        "API overloaded (529) on attempt %d/%d. "
-                        "Retrying in %.1fs...",
-                        attempt, self.config.max_retries, delay,
-                    )
-                    print(
-                        f"  [retry] API overloaded, attempt {attempt}/{self.config.max_retries}. "
-                        f"Waiting {delay:.0f}s..."
-                    )
-                    time.sleep(delay)
-                else:
-                    raise
-            except anthropic.APIConnectionError as exc:
-                last_error = exc
-                delay = self.config.retry_base_delay * (2 ** (attempt - 1))
-                logger.warning(
-                    "Connection error on attempt %d/%d: %s. "
-                    "Retrying in %.1fs...",
-                    attempt, self.config.max_retries, exc, delay,
-                )
-                print(
-                    f"  [retry] Connection error, attempt {attempt}/{self.config.max_retries}. "
-                    f"Waiting {delay:.0f}s..."
-                )
-                time.sleep(delay)
-
-        raise RuntimeError(
-            f"API call failed after {self.config.max_retries} retries"
-        ) from last_error
+        response = api_call_with_retry(
+            self.client, self.config, label="Probe",
+            model=self.config.target_model,
+            max_tokens=self.config.max_tokens,
+            temperature=temp,
+            messages=messages,
+        )
+        return response.content[0].text
 
     def _delay(self) -> None:
         """Respect rate limits with an inter-call delay."""
@@ -303,3 +248,17 @@ def load_probes(probes_file: str) -> list[dict]:
         path = Path(__file__).parent / path
     with open(path) as f:
         return json.load(f)
+
+
+def filter_probes(
+    probes: list[dict],
+    probe_ids: list[str] | None = None,
+    domains: list[str] | None = None,
+) -> list[dict]:
+    """Filter probes by ID or domain."""
+    filtered = probes
+    if probe_ids:
+        filtered = [p for p in filtered if p["id"] in probe_ids]
+    if domains:
+        filtered = [p for p in filtered if p["domain"] in domains]
+    return filtered

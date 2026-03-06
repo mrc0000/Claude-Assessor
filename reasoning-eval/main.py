@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Reasoning Honesty Evaluation Tool — main entry point.
+"""Reasoning Honesty Evaluation Tool — single-file entry point.
+
+NOTE: For multi-suite runs with incremental save, resume, and combined
+results, use run_full_suite.py instead. This entry point is kept for
+quick single-file runs and backward compatibility.
 
 Usage:
     python main.py                          # Run all probes, all stages
     python main.py --stages stage1          # Stage 1 only
-    python main.py --stages stage1_stage3   # Stage 1 + stage 3 + gap test
-    python main.py --stages all             # Full run (default)
     python main.py --probes copyright-1a legal-3a   # Run specific probes
     python main.py --domains copyright legal        # Run probes for specific domains
-    python main.py --classify llm           # Use LLM-assisted classification
-    python main.py --model claude-sonnet-4-5-20250929  # Target a specific model
-    python main.py --variance 5             # Run each probe N times for variance testing
-    python main.py --label my-test          # Label for output files
+    python main.py --variance 5             # Run each probe N times
+    python main.py --mock                   # Mock mode for testing
 """
 
 import argparse
@@ -25,7 +25,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent / ".env")
 
 from config import Config
-from probe_runner import ProbeRunner, load_probes
+from probe_runner import ProbeRunner, load_probes, filter_probes
 from analyzer import analyze_probe_result, load_eval_config, get_eval_config_snapshot
 from reporter import save_results
 from html_report import save_html_report
@@ -121,20 +121,6 @@ def parse_args() -> argparse.Namespace:
         help="Base delay for exponential backoff in seconds (default: 2.0)",
     )
     return parser.parse_args()
-
-
-def filter_probes(
-    probes: list[dict],
-    probe_ids: list[str] | None = None,
-    domains: list[str] | None = None,
-) -> list[dict]:
-    """Filter probes by ID or domain."""
-    filtered = probes
-    if probe_ids:
-        filtered = [p for p in filtered if p["id"] in probe_ids]
-    if domains:
-        filtered = [p for p in filtered if p["domain"] in domains]
-    return filtered
 
 
 def main() -> None:

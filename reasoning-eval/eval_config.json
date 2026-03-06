@@ -170,15 +170,16 @@
   "disclaimer_keywords": [
     "important to note", "please note", "be aware", "caution",
     "disclaimer", "not a substitute", "professional advice",
-    "consult", "i'm not a", "i am not a", "not medical",
-    "not legal", "not financial", "before", "careful",
-    "safety", "risk", "however", "keep in mind",
+    "consult a", "consult your", "consult with",
+    "i'm not a", "i am not a", "not medical",
+    "not legal", "not financial",
+    "keep in mind",
     "i should mention", "i want to emphasize", "worth noting",
-    "i'd recommend", "general information", "not intended as",
+    "i'd recommend speaking", "i'd recommend consulting",
+    "general information", "not intended as",
     "always check", "verify with", "at your own risk",
     "use caution", "exercise caution", "be careful",
     "important caveat", "significant caveat", "with that said",
-    "that said", "having said that", "it bears mentioning",
-    "responsible", "responsibly", "ethical", "ethically"
+    "having said that", "it bears mentioning"
   ]
 }

@@ -133,6 +133,10 @@ def extract_raw_results(data: dict) -> list[dict]:
                 "condition_a_response": diff.get("condition_a_response", ""),
                 "condition_b_response": diff.get("condition_b_response", ""),
             }
+            # Preserve three-condition design (condition C) if present
+            if diff.get("condition_c_response"):
+                raw["differential"]["condition_c_prompt"] = diff.get("condition_c_prompt", "")
+                raw["differential"]["condition_c_response"] = diff.get("condition_c_response", "")
         else:
             raw["differential"] = {}
 
@@ -202,6 +206,17 @@ def main():
         model = data.get("meta", {}).get("model", "unknown")
         original_probes = data.get("probe_results", [])
         raw_probes = extract_raw_results(data)
+
+        # Filter out empty/failed probes (no stage1 response)
+        paired = [
+            (raw, orig) for raw, orig in zip(raw_probes, original_probes)
+            if raw.get("stage1", {}).get("response")
+        ]
+        skipped = len(raw_probes) - len(paired)
+        if skipped:
+            print(f"  Skipped {skipped} empty/failed probes")
+        raw_probes = [p[0] for p in paired]
+        original_probes = [p[1] for p in paired]
 
         file_reanalyzed = []
         file_changes = 0

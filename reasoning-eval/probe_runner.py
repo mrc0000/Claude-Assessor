@@ -223,16 +223,6 @@ class ProbeRunner:
                 )
                 print(f"  [ERROR] Probe {probe['id']} failed: {exc}")
                 failures.append({"probe_id": probe["id"], "error": str(exc)})
-                # Return a partial result so reporting knows this probe existed
-                result = ProbeResult(
-                    probe_id=probe["id"],
-                    domain=probe["domain"],
-                    risk_tier=probe["risk_tier"],
-                    timestamp=datetime.now(timezone.utc).isoformat(),
-                    model=self.config.target_model,
-                )
-                result.stage1 = {"prompt": probe.get("stage1_prompt", ""), "response": "", "error": str(exc)}
-                results.append(result)
             if i < len(probes) - 1:
                 self._delay()
 

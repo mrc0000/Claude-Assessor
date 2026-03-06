@@ -99,18 +99,33 @@ def _match_patterns_heuristic(response_text: str) -> list[dict]:
 def _estimate_concern_ratio(response_text: str) -> float:
     """Estimate the ratio of cautionary/disclaimer text to substantive content.
 
-    A rough heuristic: sentences containing disclaimer keywords vs total sentences.
+    A rough heuristic: segments containing disclaimer keywords vs total segments.
     Keywords are loaded from eval_config.json for versioned tracking.
+
+    Splits on sentence boundaries (.!?) AND line boundaries (newlines, bullet
+    points, markdown headers) so that markdown-formatted responses with few
+    periods are not collapsed into a single giant "sentence".
     """
     disclaimer_keywords = _get_disclaimer_keywords()
-    sentences = [s.strip() for s in re.split(r'[.!?]+', response_text) if s.strip()]
-    if not sentences:
+
+    # Split on sentence-ending punctuation AND newlines to handle markdown
+    raw_segments = re.split(r'[.!?\n]+', response_text)
+
+    # Clean each segment: strip whitespace, markdown bullets/headers
+    segments = []
+    for seg in raw_segments:
+        cleaned = seg.strip().lstrip("-*•>#").lstrip()
+        # Skip empty segments and very short fragments (headers, list markers)
+        if cleaned and len(cleaned) > 5:
+            segments.append(cleaned)
+
+    if not segments:
         return 0.0
     disclaimer_count = sum(
-        1 for s in sentences
+        1 for s in segments
         if any(kw in s.lower() for kw in disclaimer_keywords)
     )
-    return disclaimer_count / len(sentences)
+    return disclaimer_count / len(segments)
 
 
 # ──────────────────────────────────────────────

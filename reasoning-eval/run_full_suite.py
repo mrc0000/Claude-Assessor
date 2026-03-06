@@ -111,6 +111,11 @@ def parse_args() -> argparse.Namespace:
         "--continue-on-suite-failure", action="store_true", default=True,
         help="Continue to next suite if one suite fails entirely (default: True)",
     )
+    parser.add_argument(
+        "--resume-partial", action="store_true",
+        help="Resume from partial results files left by interrupted runs. "
+             "Skips suites that already have a _partial_{label}.json with all variance runs.",
+    )
     return parser.parse_args()
 
 
@@ -159,29 +164,65 @@ def run_suite(
         return []
 
     all_results = []
-    for run_idx in range(args.variance):
-        if args.variance > 1:
-            print(f"\n  --- Variance run {run_idx + 1}/{args.variance} ---")
 
-        raw_results = runner.run_all_probes(probes, run_stages=args.stages)
-
-        for raw in raw_results:
-            result_dict = raw.to_dict()
-            analyzed = analyze_probe_result(result_dict, config)
-            if args.variance > 1:
-                analyzed["variance_run"] = run_idx + 1
-            analyzed["_suite"] = suite_key
-            all_results.append(analyzed)
-
-    # Save individual suite results
+    # Incremental save: flush results after each variance run so a session
+    # drop never loses more than one variance run worth of work.
     label = suite_def["label"]
     if args.variance > 1:
         label += f"_v{args.variance}"
+    partial_file = config.results_dir / f"_partial_{label}.json"
 
+    # Resume from partial results if available
+    start_variance = 0
+    if getattr(args, 'resume_partial', False) and partial_file.exists():
+        partial_data = json.loads(partial_file.read_text())
+        if partial_data:
+            max_variance = max(r.get("variance_run", 1) for r in partial_data)
+            expected_per_run = len(probes)
+            count_at_max = sum(1 for r in partial_data if r.get("variance_run", 1) == max_variance)
+            if count_at_max == expected_per_run:
+                # Last variance run completed fully
+                start_variance = max_variance
+                all_results = partial_data
+                print(f"  [resume] Loaded {len(all_results)} results from partial file "
+                      f"(variance 1-{max_variance} complete, resuming at {start_variance + 1})")
+            else:
+                # Last variance run was incomplete — keep only fully completed runs
+                start_variance = max_variance - 1
+                all_results = [r for r in partial_data if r.get("variance_run", 1) < max_variance]
+                print(f"  [resume] Loaded {len(all_results)} results from partial file "
+                      f"(variance 1-{start_variance} complete, re-running {start_variance + 1})")
+
+    if start_variance >= args.variance:
+        print(f"  [resume] All {args.variance} variance runs already complete, skipping suite.")
+    else:
+        for run_idx in range(start_variance, args.variance):
+            if args.variance > 1:
+                print(f"\n  --- Variance run {run_idx + 1}/{args.variance} ---")
+
+            raw_results = runner.run_all_probes(probes, run_stages=args.stages)
+
+            for raw in raw_results:
+                result_dict = raw.to_dict()
+                analyzed = analyze_probe_result(result_dict, config)
+                if args.variance > 1:
+                    analyzed["variance_run"] = run_idx + 1
+                analyzed["_suite"] = suite_key
+                all_results.append(analyzed)
+
+            # Flush to disk after each variance run
+            partial_file.write_text(json.dumps(all_results, indent=2, default=str))
+            print(f"  [saved] {len(all_results)} results flushed to {partial_file.name}")
+
+    # Final save (replaces partial with timestamped files)
     saved = save_results(
         all_results, config.target_model,
         config.results_dir, config.reports_dir, run_label=label,
     )
+
+    # Clean up partial file now that final save succeeded
+    if partial_file.exists():
+        partial_file.unlink()
     html_file = save_html_report(
         all_results, config.target_model,
         config.reports_dir, run_label=label,

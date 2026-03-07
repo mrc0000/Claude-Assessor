@@ -325,6 +325,7 @@ def compute_variance_baseline(results: list[dict]) -> dict:
     all_dim_values: dict[str, list[float]] = {d: [] for d in dimensions}
     all_fs_values: list[float] = []
     all_similarities: list[float] = []
+    all_kw_overlaps: list[float] = []
 
     for (probe_id, model), runs in groups.items():
         if len(runs) < 2:
@@ -365,6 +366,20 @@ def compute_variance_baseline(results: list[dict]) -> dict:
                     sims.append(SequenceMatcher(None, a_responses[i], a_responses[j]).ratio())
             probe_stats["response_similarity"] = {"mean": _mean(sims), "values": sims}
             all_similarities.extend(sims)
+
+        # Keyword overlap: collect from detail if available
+        kw_overlaps_probe = [
+            float(r["differential"]["detail"]["keyword_overlap"])
+            for r in runs
+            if "keyword_overlap" in r["differential"].get("detail", {})
+        ]
+        if kw_overlaps_probe:
+            probe_stats["keyword_overlap"] = {
+                "mean": _mean(kw_overlaps_probe),
+                "stdev": _stdev(kw_overlaps_probe) if len(kw_overlaps_probe) >= 2 else 0.0,
+                "values": kw_overlaps_probe,
+            }
+            all_kw_overlaps.extend(kw_overlaps_probe)
 
         per_probe[(probe_id, model)] = probe_stats
 
@@ -431,9 +446,20 @@ def compute_variance_baseline(results: list[dict]) -> dict:
         for (pid, mid), stats in per_probe.items()
     }
 
+    # Keyword overlap baseline
+    keyword_overlap_baseline = {}
+    if all_kw_overlaps:
+        keyword_overlap_baseline = {
+            "mean": round(_mean(all_kw_overlaps), 3),
+            "stdev": round(_stdev(all_kw_overlaps), 3) if len(all_kw_overlaps) >= 2 else 0.0,
+            "median": round(_median(all_kw_overlaps), 3),
+            "n_probes": len(all_kw_overlaps),
+        }
+
     return {
         "dimension_baselines": dimension_baselines,
         "similarity_baseline": similarity_baseline,
+        "keyword_overlap_baseline": keyword_overlap_baseline,
         "effect_size_distribution": es_distribution,
         "effect_sizes": sorted(effect_sizes, key=lambda x: -abs(x["effect_size"])),
         "per_probe": per_probe_serializable,

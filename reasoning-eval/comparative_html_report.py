@@ -631,6 +631,16 @@ def _generate_variance_section(analysis: dict) -> str:
             <div style="color:var(--muted);font-size:0.75rem">σ={sim_baseline.get('stdev', 0):.3f} · median={sim_baseline.get('median', 0):.3f} · {sim_baseline.get('n_pairs', 0)} pairs</div>
         </div>"""
 
+    kw_baseline = vb.get("keyword_overlap_baseline", {})
+    kw_html = ""
+    if kw_baseline:
+        kw_html = f"""
+        <div class="stat-card" style="margin-top:1rem">
+            <div class="stat-value">{kw_baseline.get('mean', 0):.3f}</div>
+            <div class="stat-label">Mean Keyword Overlap (Jaccard on key terms, cross-framing)</div>
+            <div style="color:var(--muted);font-size:0.75rem">σ={kw_baseline.get('stdev', 0):.3f} · median={kw_baseline.get('median', 0):.3f} · {kw_baseline.get('n_probes', 0)} probes</div>
+        </div>"""
+
     return f"""
     <div class="stats-grid-4" style="margin-bottom:1.5rem">
         <div class="stat-card"><div class="stat-value">{total_es}</div><div class="stat-label">Probes with Variance Data</div></div>
@@ -652,6 +662,7 @@ def _generate_variance_section(analysis: dict) -> str:
         <tbody>{dim_rows}</tbody>
     </table>
     {sim_html}
+    {kw_html}
 
     <h3 style="margin-top:1.5rem">Top Effect Sizes</h3>
     <p style="color:var(--muted);margin-bottom:0.75rem">Probes where framing sensitivity deviates most from the baseline. |effect| &lt; 1 = noise, 1–2 = meaningful, &gt; 2 = strong.</p>

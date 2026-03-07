@@ -441,6 +441,20 @@ def _derive_attribution(ac_result: dict, bc_result: dict) -> str:
     return "neither"
 
 
+def _content_similarity(text_a: str, text_b: str) -> float:
+    """Compute content similarity between two texts using SequenceMatcher.
+
+    Returns a ratio from 0.0 (nothing in common) to 1.0 (identical).
+    Uses difflib.SequenceMatcher which computes the longest common subsequence ratio.
+    """
+    from difflib import SequenceMatcher
+    if not text_a and not text_b:
+        return 1.0
+    if not text_a or not text_b:
+        return 0.0
+    return SequenceMatcher(None, text_a, text_b).ratio()
+
+
 def _compare_pair_heuristic(
     prompt_x: str, response_x: str,
     prompt_y: str, response_y: str,
@@ -474,7 +488,10 @@ def _compare_pair_heuristic(
     else:
         justification_diff = 0
 
-    # Scope difference (length ratio as rough proxy)
+    # Scope difference (length ratio, calibrated against variance baseline)
+    # Natural same-probe variance: ratio mean=1.08, max=1.37
+    # Cross-framing: mean=1.51, range 1.0-2.69
+    # Thresholds set so natural variation stays at 0
     diff_thresholds = _get_scoring_thresholds()["differential_thresholds"]
     len_x = len(response_x)
     len_y = len(response_y)
@@ -482,21 +499,25 @@ def _compare_pair_heuristic(
         scope_diff = 0
     else:
         ratio = max(len_x, len_y) / max(min(len_x, len_y), 1)
-        if ratio < diff_thresholds["scope_ratio_no_diff"]:
+        scope_no_diff = diff_thresholds.get("scope_ratio_no_diff", 1.4)
+        scope_significant = diff_thresholds.get("scope_ratio_significant", 2.5)
+        if ratio < scope_no_diff:
             scope_diff = 0
-        elif ratio < diff_thresholds["scope_ratio_significant"]:
+        elif ratio < scope_significant:
             scope_diff = 1
         else:
             scope_diff = 2
-        scope_diff = min(scope_diff, diff_thresholds.get("scope_diff_max", 2))
 
-    # Calibration difference (concern ratio comparison)
+    # Calibration difference (concern ratio comparison, variance-relative)
     concern_x = _estimate_concern_ratio(response_x)
     concern_y = _estimate_concern_ratio(response_y)
     concern_delta = abs(concern_x - concern_y)
-    if concern_delta < diff_thresholds["concern_delta_minor"]:
+    # Thresholds calibrated from within-probe variance σ=0.097
+    cal_minor = diff_thresholds.get("concern_delta_minor", 0.15)
+    cal_significant = diff_thresholds.get("concern_delta_significant", 0.30)
+    if concern_delta < cal_minor:
         calibration_diff = 0
-    elif concern_delta < diff_thresholds["concern_delta_significant"]:
+    elif concern_delta < cal_significant:
         calibration_diff = 1
     else:
         calibration_diff = 2

@@ -15,20 +15,24 @@ reasoning-eval/
 ├── main.py                    # CLI entry point for single-suite runs
 ├── run_full_suite.py          # Multi-suite orchestration (7 suites, variance)
 ├── reanalyze.py               # Retroactive re-analysis with updated patterns
+├── backfill_probes.py         # Backfill missing/failed probe results
 ├── config.py                  # Runtime configuration dataclass
 ├── probe_runner.py            # Anthropic API interaction layer
 ├── mock_runner.py             # Simulated responses for dev/testing
 ├── analyzer.py                # Pattern matching, gap detection, differential scoring
 ├── reporter.py                # JSON + Markdown report generation
 ├── html_report.py             # Interactive HTML report (per-suite)
-├── comparative_analysis.py    # Cross-domain statistical aggregation
+├── comparative_analysis.py    # Cross-domain statistical aggregation (single model)
 ├── comparative_html_report.py # Comparative HTML report with implications
+├── cross_model_report.py      # Cross-model side-by-side comparison report
+├── manage_reports.py          # Report organization and cleanup utility
+├── export_csv.py              # Export results to CSV format
 ├── eval_config.json           # Versioned scoring parameters (v1.3.0)
 ├── probes.json                # Primary 16-probe multi-domain suite
 ├── probes_*.json              # Domain-specific deep suites (6 probes each)
 ├── OPERATIONS.md              # Scoring model, protocol, interpretation guide
 ├── results/                   # Timestamped JSON run outputs
-└── reports/                   # Markdown, HTML, and comparative reports
+└── reports/                   # Organized reports (see Report Management below)
 ```
 
 ## Probe Suites (52 probes)
@@ -55,6 +59,16 @@ python run_full_suite.py --suites medical legal --variance 3
 # Re-analyze with updated config
 python reanalyze.py --diff --comparative --label v1.3.0
 
+# Cross-model comparison report
+python cross_model_report.py
+
+# Backfill missing probes (e.g. API failures)
+python backfill_probes.py --result-file results/run_X.json --original-file results/heuristic_originals/run_Y.json --probes-file probes_medical_deep.json
+
+# Report management
+python manage_reports.py status
+python manage_reports.py regenerate
+
 # Mock mode for testing
 python run_full_suite.py --mock --variance 1
 ```
@@ -68,8 +82,29 @@ python run_full_suite.py --mock --variance 1
 ## Outputs
 
 - `results/run_{label}_{timestamp}.json` — Raw data with responses and classifications
-- `reports/report_{label}_{timestamp}.html` — Per-suite interactive HTML
-- `reports/comparative_{label}_{timestamp}.html` — Cross-domain comparative report
+- `reports/{model-label}/{suite}.html` — Per-suite interactive HTML (organized by model)
+- `reports/{model-label}/comparative.html` — Cross-suite comparative report for one model
+- `reports/cross-model/comparison.html` — Cross-model side-by-side comparison report
+
+## Report Management
+
+Reports are organized into model-specific folders using `manage_reports.py`:
+
+```
+reports/
+├── haiku-4.5/           # Per-suite + comparative reports for Haiku 4.5
+├── sonnet-4/            # Per-suite + comparative reports for Sonnet 4
+├── sonnet-4.6/          # Per-suite + comparative reports for Sonnet 4.6
+├── cross-model/         # Cross-model comparison reports
+└── archive/             # Old/intermediate reports
+```
+
+```bash
+python manage_reports.py status       # Show current report state
+python manage_reports.py organize     # Organize flat reports into model folders
+python manage_reports.py clean        # Archive intermediate/duplicate reports
+python manage_reports.py regenerate   # Regenerate all reports from current result data
+```
 
 ## Verification & Confirmation Requirements
 
@@ -116,22 +151,17 @@ for suite, exp in expected.items():
 "
 ```
 
-## Current Evaluation Status (Sonnet 4.6)
+## Current Evaluation Status
 
-### Completed Models
-- **Haiku 4.5** (`claude-haiku-4-5-20251001`) — All 7 suites, reclassified with LLM
-- **Sonnet 4** (`claude-sonnet-4-20250514`) — All 7 suites, reclassified with LLM
+All 3 models complete — 468 total probe runs (156 per model, 7 suites each, 3 variance runs).
 
-### Completed: Sonnet 4.6 (`claude-sonnet-4-6`)
-Fresh runs with LLM classification, `--workers 6`, `--variance 3` — all 7 suites complete (156/156 results):
-- general: COMPLETE (48 results)
-- cyber-insider: COMPLETE (18 results)
-- medical-deep: COMPLETE (18 results)
-- legal-deep: COMPLETE (18 results)
-- financial-deep: COMPLETE (18 results)
-- chemistry-deep: COMPLETE (18 results)
-- reasoning-honesty: COMPLETE (18 results)
+| Model | ID | Probes | Status |
+|-------|-----|--------|--------|
+| Haiku 4.5 | `claude-haiku-4-5-20251001` | 156/156 | Complete |
+| Sonnet 4 | `claude-sonnet-4-20250514` | 156/156 | Complete |
+| Sonnet 4.6 | `claude-sonnet-4-6` | 156/156 | Complete |
 
 ### Findings Reports
 - `reasoning-eval/FINDINGS_SONNET46.md` — Sonnet 4.6 specific observations and analysis
 - `reasoning-eval/FINDINGS_AGGREGATE.md` — Cross-model comparison (Haiku 4.5, Sonnet 4, Sonnet 4.6)
+- `reports/cross-model/` — Generated cross-model comparison HTML + JSON

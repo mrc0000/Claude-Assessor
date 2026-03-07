@@ -295,6 +295,151 @@ def compute_capability_gap_analysis(results: list[dict]) -> dict:
     return dict(domain_gaps)
 
 
+def compute_variance_baseline(results: list[dict]) -> dict:
+    """Compute natural variance baseline from multiple variance runs per probe.
+
+    Groups results by (probe_id, model) and computes per-dimension statistics
+    across variance runs. This establishes the noise floor: how much does the
+    same probe vary when framing is identical?
+
+    Returns:
+        Dict with:
+        - dimension_baselines: per-dimension aggregate mean and stdev
+        - per_probe: per-(probe_id, model) dimension stats
+        - effect_sizes: per-probe effect size (observed vs baseline)
+        - response_similarity: natural similarity between same-probe responses
+    """
+    from difflib import SequenceMatcher
+
+    # Group by (probe_id, model)
+    groups: dict[tuple[str, str], list[dict]] = defaultdict(list)
+    for r in results:
+        diff = r.get("differential", {})
+        if "verdict" not in diff or not diff.get("detail"):
+            continue
+        key = (r.get("probe_id", ""), r.get("model", r.get("_meta", {}).get("model", "")))
+        groups[key].append(r)
+
+    dimensions = ["constraint_diff", "justification_diff", "scope_diff", "calibration_diff"]
+    per_probe = {}
+    all_dim_values: dict[str, list[float]] = {d: [] for d in dimensions}
+    all_fs_values: list[float] = []
+    all_similarities: list[float] = []
+
+    for (probe_id, model), runs in groups.items():
+        if len(runs) < 2:
+            continue
+
+        # Collect dimension scores across runs
+        dim_scores: dict[str, list[float]] = {d: [] for d in dimensions}
+        fs_scores: list[float] = []
+        for r in runs:
+            detail = r["differential"].get("detail", {})
+            for d in dimensions:
+                if d in detail:
+                    dim_scores[d].append(float(detail[d]))
+            fs_scores.append(float(r["differential"].get("framing_sensitivity", 0)))
+
+        # Per-dimension stats for this probe
+        probe_stats = {}
+        for d in dimensions:
+            vals = dim_scores[d]
+            if vals:
+                probe_stats[d] = {"mean": _mean(vals), "stdev": _stdev(vals), "values": vals}
+                all_dim_values[d].extend(vals)
+
+        probe_stats["framing_sensitivity"] = {
+            "mean": _mean(fs_scores), "stdev": _stdev(fs_scores), "values": fs_scores,
+        }
+        all_fs_values.extend(fs_scores)
+
+        # Response similarity: how similar are condition_a responses across runs?
+        a_responses = [
+            r["differential"].get("condition_a_response", "")
+            for r in runs if r["differential"].get("condition_a_response")
+        ]
+        if len(a_responses) >= 2:
+            sims = []
+            for i in range(len(a_responses)):
+                for j in range(i + 1, len(a_responses)):
+                    sims.append(SequenceMatcher(None, a_responses[i], a_responses[j]).ratio())
+            probe_stats["response_similarity"] = {"mean": _mean(sims), "values": sims}
+            all_similarities.extend(sims)
+
+        per_probe[(probe_id, model)] = probe_stats
+
+    # Aggregate baselines
+    dimension_baselines = {}
+    for d in dimensions:
+        vals = all_dim_values[d]
+        if vals:
+            stdevs = [per_probe[k][d]["stdev"] for k in per_probe if d in per_probe[k]]
+            dimension_baselines[d] = {
+                "global_mean": round(_mean(vals), 3),
+                "global_stdev": round(_stdev(vals), 3),
+                "avg_within_probe_stdev": round(_mean(stdevs), 3),
+                "n_probes": len(stdevs),
+            }
+
+    fs_stdevs = [per_probe[k]["framing_sensitivity"]["stdev"] for k in per_probe]
+    dimension_baselines["framing_sensitivity"] = {
+        "global_mean": round(_mean(all_fs_values), 3),
+        "global_stdev": round(_stdev(all_fs_values), 3),
+        "avg_within_probe_stdev": round(_mean(fs_stdevs), 3),
+        "n_probes": len(fs_stdevs),
+    }
+
+    # Response similarity baseline
+    similarity_baseline = {}
+    if all_similarities:
+        similarity_baseline = {
+            "mean": round(_mean(all_similarities), 3),
+            "stdev": round(_stdev(all_similarities), 3),
+            "median": round(_median(all_similarities), 3),
+            "n_pairs": len(all_similarities),
+        }
+
+    # Per-probe effect sizes
+    fs_baseline_mean = _mean(all_fs_values)
+    fs_baseline_stdev = _stdev(all_fs_values) if len(all_fs_values) >= 2 else 1.0
+    effect_sizes = []
+    for (probe_id, model), stats in per_probe.items():
+        fs_mean = stats["framing_sensitivity"]["mean"]
+        es = (fs_mean - fs_baseline_mean) / fs_baseline_stdev if fs_baseline_stdev > 0 else 0
+        effect_sizes.append({
+            "probe_id": probe_id,
+            "model": model,
+            "framing_sensitivity_mean": round(fs_mean, 2),
+            "effect_size": round(es, 2),
+        })
+
+    # Effect size distribution
+    es_vals = [e["effect_size"] for e in effect_sizes]
+    es_distribution = {
+        "within_noise": sum(1 for e in es_vals if abs(e) < 1.0),
+        "meaningful": sum(1 for e in es_vals if 1.0 <= abs(e) < 2.0),
+        "strong": sum(1 for e in es_vals if abs(e) >= 2.0),
+        "total": len(es_vals),
+    }
+
+    # Serialize per_probe keys as strings for JSON
+    per_probe_serializable = {
+        f"{pid}|{mid}": {
+            k: {sk: sv for sk, sv in v.items() if sk != "values"}
+            for k, v in stats.items()
+        }
+        for (pid, mid), stats in per_probe.items()
+    }
+
+    return {
+        "dimension_baselines": dimension_baselines,
+        "similarity_baseline": similarity_baseline,
+        "effect_size_distribution": es_distribution,
+        "effect_sizes": sorted(effect_sizes, key=lambda x: -abs(x["effect_size"])),
+        "per_probe": per_probe_serializable,
+    }
+
+
 def generate_comparative_analysis(results: list[dict]) -> dict:
     """Generate the complete comparative analysis data structure."""
     domain_stats = compute_domain_stats(results)
@@ -303,6 +448,7 @@ def generate_comparative_analysis(results: list[dict]) -> dict:
     verdict_map = compute_verdict_map(results)
     cred_sensitivity = compute_credential_sensitivity(results)
     gap_analysis = compute_capability_gap_analysis(results)
+    variance_baseline = compute_variance_baseline(results)
 
     # Global summary metrics
     total = len(results)
@@ -346,4 +492,5 @@ def generate_comparative_analysis(results: list[dict]) -> dict:
         "verdict_map": verdict_map,
         "credential_sensitivity": cred_sensitivity,
         "capability_gap_analysis": gap_analysis,
+        "variance_baseline": variance_baseline,
     }

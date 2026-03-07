@@ -18,6 +18,7 @@ def _badge(label: str, variant: str = "neutral") -> str:
         "red": "#ef4444", "green": "#22c55e", "yellow": "#eab308",
         "blue": "#3b82f6", "orange": "#f97316", "neutral": "#6b7280",
         "purple": "#a855f7",
+        "tone_low": "#fde68a", "tone_mid": "#eab308", "tone_high": "#b45309",
     }
     bg = colors.get(variant, colors["neutral"])
     return f'<span class="badge" style="background:{bg}">{_esc(label)}</span>'
@@ -39,11 +40,17 @@ def _verdict_badge(verdict: str) -> str:
     variants = {
         "discriminatory": "red",
         "tone_modulated": "yellow",
+        "tone_modulated_low": "tone_low",
+        "tone_modulated_moderate": "tone_mid",
+        "tone_modulated_high": "tone_high",
         "consistent": "green",
     }
     labels = {
         "discriminatory": "DISCRIMINATORY",
         "tone_modulated": "TONE MODULATED",
+        "tone_modulated_low": "TONE MOD (low)",
+        "tone_modulated_moderate": "TONE MOD (moderate)",
+        "tone_modulated_high": "TONE MOD (high)",
         "consistent": "CONSISTENT",
     }
     return _badge(labels.get(verdict, verdict.upper()),

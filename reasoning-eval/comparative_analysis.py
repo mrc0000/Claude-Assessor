@@ -56,6 +56,14 @@ def _stdev(vals: list[float]) -> float:
     return math.sqrt(sum((v - m) ** 2 for v in vals) / (len(vals) - 1))
 
 
+def _tone_modulated_count(verdicts: dict) -> int:
+    """Sum all tone_modulated variants (graded and ungraded)."""
+    return sum(
+        count for v, count in verdicts.items()
+        if v.startswith("tone_modulated")
+    )
+
+
 def _median(vals: list[float]) -> float:
     if not vals:
         return 0.0
@@ -130,7 +138,7 @@ def compute_domain_stats(results: list[dict]) -> dict[str, dict]:
         # Verdict distribution
         total_verdicts = sum(d["verdicts"].values())
         d["discriminatory_rate"] = round(d["verdicts"].get("discriminatory", 0) / total_verdicts * 100, 1) if total_verdicts else 0
-        d["tone_modulated_rate"] = round(d["verdicts"].get("tone_modulated", 0) / total_verdicts * 100, 1) if total_verdicts else 0
+        d["tone_modulated_rate"] = round(_tone_modulated_count(d["verdicts"]) / total_verdicts * 100, 1) if total_verdicts else 0
         d["consistent_rate"] = round(d["verdicts"].get("consistent", 0) / total_verdicts * 100, 1) if total_verdicts else 0
         # Convert sets/defaultdicts for JSON serialization
         d["probe_ids"] = sorted(d["probe_ids"])
@@ -190,8 +198,13 @@ def compute_pattern_frequency(results: list[dict]) -> dict[str, int]:
 
 def compute_verdict_map(results: list[dict]) -> list[dict]:
     """Compute per-probe verdict data for cross-domain visualization."""
-    # Verdict severity for sorting: discriminatory first, then tone_modulated, then consistent
-    verdict_severity = {"discriminatory": 2, "tone_modulated": 1, "consistent": 0}
+    # Verdict severity for sorting: discriminatory first, then tone_modulated grades, then consistent
+    verdict_severity = {
+        "discriminatory": 2,
+        "tone_modulated": 1, "tone_modulated_high": 1.3,
+        "tone_modulated_moderate": 1.1, "tone_modulated_low": 1.0,
+        "consistent": 0,
+    }
     rows = []
     for r in results:
         diff = r.get("differential", {})
@@ -247,7 +260,7 @@ def compute_credential_sensitivity(results: list[dict]) -> dict:
         entry = {
             "total_probes": total,
             "discriminatory_rate": round(dc["verdicts"].get("discriminatory", 0) / total * 100, 1) if total else 0,
-            "tone_modulated_rate": round(dc["verdicts"].get("tone_modulated", 0) / total * 100, 1) if total else 0,
+            "tone_modulated_rate": round(_tone_modulated_count(dc["verdicts"]) / total * 100, 1) if total else 0,
             "consistent_rate": round(dc["verdicts"].get("consistent", 0) / total * 100, 1) if total else 0,
             "verdicts": dict(dc["verdicts"]),
         }
@@ -324,7 +337,7 @@ def generate_comparative_analysis(results: list[dict]) -> dict:
             "verdict_distribution": dict(verdict_dist),
             "attribution_distribution": dict(attribution_dist),
             "discriminatory_rate": round(verdict_dist.get("discriminatory", 0) / total_tested * 100, 1) if total_tested else 0,
-            "tone_modulated_rate": round(verdict_dist.get("tone_modulated", 0) / total_tested * 100, 1) if total_tested else 0,
+            "tone_modulated_rate": round(_tone_modulated_count(verdict_dist) / total_tested * 100, 1) if total_tested else 0,
             "consistent_rate": round(verdict_dist.get("consistent", 0) / total_tested * 100, 1) if total_tested else 0,
         },
         "domain_stats": domain_stats,

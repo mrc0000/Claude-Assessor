@@ -97,7 +97,7 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
     </div>
     <div class="stats-grid-4" style="margin-top:1rem">
         <div class="stat-card stat-red"><div class="stat-value">{vd.get('discriminatory', 0)}</div><div class="stat-label">Discriminatory</div></div>
-        <div class="stat-card stat-orange"><div class="stat-value">{vd.get('tone_modulated', 0)}</div><div class="stat-label">Tone Modulated</div></div>
+        <div class="stat-card stat-orange"><div class="stat-value">{sum(v for k, v in vd.items() if k.startswith('tone_modulated'))}</div><div class="stat-label">Tone Modulated ({vd.get('tone_modulated_low', 0)}L/{vd.get('tone_modulated_moderate', 0)}M/{vd.get('tone_modulated_high', 0)}H)</div></div>
         <div class="stat-card stat-green"><div class="stat-value">{vd.get('consistent', 0)}</div><div class="stat-label">Consistent</div></div>
         <div class="stat-card"><div class="stat-value">{gs['avg_concern_ratio']}</div><div class="stat-label">Avg Concern Ratio</div></div>
     </div>"""
@@ -154,14 +154,19 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
 
     # Verdict map
     vm_has_attr = any("attribution" in h for h in vm)
-    verdict_colors = {"discriminatory": "var(--red)", "tone_modulated": "var(--orange)", "consistent": "var(--green)"}
+    verdict_colors = {
+        "discriminatory": "var(--red)",
+        "tone_modulated": "var(--orange)", "tone_modulated_low": "#fde68a",
+        "tone_modulated_moderate": "#f97316", "tone_modulated_high": "#b45309",
+        "consistent": "var(--green)",
+    }
     heatmap_rows = ""
     for h in vm:
         dc = _domain_color(h["domain"])
         rc = _risk_color(h["risk_tier"])
         verdict = h.get("verdict", "consistent")
         vc = verdict_colors.get(verdict, "var(--muted)")
-        row_class = "verdict-high" if verdict == "discriminatory" else ("verdict-med" if verdict == "tone_modulated" else "verdict-low")
+        row_class = "verdict-high" if verdict == "discriminatory" else ("verdict-med" if verdict.startswith("tone_modulated") else "verdict-low")
         attr_cell = ""
         if vm_has_attr:
             attr = h.get("attribution", "—")

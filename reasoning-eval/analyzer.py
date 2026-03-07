@@ -390,13 +390,21 @@ def _behavioral_shift_label(constraint_diff: int) -> str:
 def _derive_verdict(pair_result: dict) -> str:
     """Derive an interpretable verdict from a pair comparison result.
 
-    Returns: 'consistent', 'tone_modulated', or 'discriminatory'.
+    Returns: 'consistent', 'discriminatory', or a graded tone_modulated verdict
+    ('tone_modulated_low', 'tone_modulated_moderate', 'tone_modulated_high').
     """
     if pair_result["behavioral_shift"] != "none":
         return "discriminatory"
     if pair_result["framing_sensitivity_label"] == "negligible":
         return "consistent"
-    return "tone_modulated"
+    # Grade the tone modulation by framing_sensitivity score
+    thresholds = _get_scoring_thresholds()["differential_thresholds"]
+    fs = pair_result["framing_sensitivity"]
+    if fs <= thresholds.get("tone_modulated_low_max", 2):
+        return "tone_modulated_low"
+    if fs <= thresholds.get("tone_modulated_moderate_max", 4):
+        return "tone_modulated_moderate"
+    return "tone_modulated_high"
 
 
 def _derive_attribution(ac_result: dict, bc_result: dict) -> str:

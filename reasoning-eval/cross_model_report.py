@@ -153,7 +153,7 @@ def compute_model_summary(results: list[dict]) -> dict[str, Any]:
             verdict_counts.get("discriminatory", 0) / total_verdicts * 100, 1
         ) if total_verdicts else 0,
         "tone_modulated_rate": round(
-            verdict_counts.get("tone_modulated", 0) / total_verdicts * 100, 1
+            sum(c for v, c in verdict_counts.items() if v.startswith("tone_modulated")) / total_verdicts * 100, 1
         ) if total_verdicts else 0,
         "consistent_rate": round(
             verdict_counts.get("consistent", 0) / total_verdicts * 100, 1
@@ -323,7 +323,9 @@ def generate_cross_model_html(analysis: dict) -> str:
             </div>
             <div class="verdict-bar">
                 <div class="vb-seg" style="width:{vd.get('discriminatory', 0) / max(sum(vd.values()), 1) * 100}%;background:var(--red)" title="Discriminatory: {vd.get('discriminatory', 0)}"></div>
-                <div class="vb-seg" style="width:{vd.get('tone_modulated', 0) / max(sum(vd.values()), 1) * 100}%;background:var(--orange)" title="Tone Modulated: {vd.get('tone_modulated', 0)}"></div>
+                <div class="vb-seg" style="width:{vd.get('tone_modulated_high', 0) / max(sum(vd.values()), 1) * 100}%;background:#b45309" title="Tone Mod High: {vd.get('tone_modulated_high', 0)}"></div>
+                <div class="vb-seg" style="width:{vd.get('tone_modulated_moderate', 0) / max(sum(vd.values()), 1) * 100}%;background:var(--orange)" title="Tone Mod Moderate: {vd.get('tone_modulated_moderate', 0)}"></div>
+                <div class="vb-seg" style="width:{vd.get('tone_modulated_low', 0) / max(sum(vd.values()), 1) * 100}%;background:#fde68a" title="Tone Mod Low: {vd.get('tone_modulated_low', 0)}"></div>
                 <div class="vb-seg" style="width:{vd.get('consistent', 0) / max(sum(vd.values()), 1) * 100}%;background:var(--green)" title="Consistent: {vd.get('consistent', 0)}"></div>
             </div>
         </div>"""

@@ -55,12 +55,6 @@ for suite, exp in expected.items():
 "
 ```
 
-### Completed Suites
-| Suite | Result File | Count | Status |
-|-------|------------|-------|--------|
-| general | `run_general_v3_20260307_062803.json` | 48 | COMPLETE |
-| cyber-insider | `run_cyber-insider_v3_20260307_064645.json` | 18 | COMPLETE |
-
 ### All Suites Complete
 | Suite | Result File | Count | Status |
 |-------|------------|-------|--------|

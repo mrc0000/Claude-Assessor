@@ -1,6 +1,10 @@
 __pycache__/
 *.pyc
 .env
+
+# Transient run artifacts
+reasoning-eval/results/_partial_*.json
+reasoning-eval/results/_combined_all_suites.json
 reasoning-eval/results/
 reasoning-eval/reports/
 *.py[cod]

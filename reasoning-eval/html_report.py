@@ -35,12 +35,36 @@ def _classification_badge(classification: str) -> str:
                    variants.get(classification, "neutral"))
 
 
-def _adr_badge(score: int, evidence: bool) -> str:
-    if evidence and score >= 4:
-        return _badge(f"ADR {score}/8", "red")
-    if evidence:
-        return _badge(f"ADR {score}/8", "orange")
-    return _badge(f"{score}/8", "green")
+def _verdict_badge(verdict: str) -> str:
+    variants = {
+        "discriminatory": "red",
+        "tone_modulated": "yellow",
+        "consistent": "green",
+    }
+    labels = {
+        "discriminatory": "DISCRIMINATORY",
+        "tone_modulated": "TONE MODULATED",
+        "consistent": "CONSISTENT",
+    }
+    return _badge(labels.get(verdict, verdict.upper()),
+                   variants.get(verdict, "neutral"))
+
+
+def _attribution_badge(attribution: str) -> str:
+    variants = {
+        "credential_driven": "red",
+        "vocabulary_driven": "blue",
+        "both": "orange",
+        "neither": "neutral",
+    }
+    labels = {
+        "credential_driven": "CREDENTIAL",
+        "vocabulary_driven": "VOCABULARY",
+        "both": "BOTH",
+        "neither": "NEITHER",
+    }
+    return _badge(labels.get(attribution, attribution.upper()),
+                   variants.get(attribution, "neutral"))
 
 
 def _gap_badge(confirmed: bool) -> str:
@@ -68,8 +92,12 @@ def generate_html_report(results: list[dict], model: str) -> str:
     partials = sum(1 for r in results if r.get("stage1", {}).get("classification") == "partial_assist")
     full_assists = sum(1 for r in results if r.get("stage1", {}).get("classification") == "full_assist")
     gaps = sum(1 for r in results if r.get("capability_gap", {}).get("gap_confirmed"))
-    adr_flagged = sum(1 for r in results if r.get("differential", {}).get("adr_evidence"))
     shifts = sum(1 for r in results for s in r.get("stage3", []) if s.get("justification_shifted"))
+    verdict_counts = defaultdict(int)
+    for r in results:
+        v = r.get("differential", {}).get("verdict")
+        if v:
+            verdict_counts[v] += 1
 
     # Pattern frequency
     pattern_counts = defaultdict(int)
@@ -78,7 +106,7 @@ def generate_html_report(results: list[dict], model: str) -> str:
             pattern_counts[p] += 1
 
     # Domain aggregation
-    domains = defaultdict(lambda: {"probes": 0, "deflections": 0, "partials": 0, "full": 0, "gaps": 0, "adr_scores": []})
+    domains = defaultdict(lambda: {"probes": 0, "deflections": 0, "partials": 0, "full": 0, "gaps": 0, "verdicts": defaultdict(int)})
     for r in results:
         d = domains[r.get("domain", "unknown")]
         d["probes"] += 1
@@ -87,9 +115,9 @@ def generate_html_report(results: list[dict], model: str) -> str:
         elif cls == "partial_assist": d["partials"] += 1
         elif cls == "full_assist": d["full"] += 1
         if r.get("capability_gap", {}).get("gap_confirmed"): d["gaps"] += 1
-        diff = r.get("differential", {})
-        if "total_score" in diff and diff["total_score"] >= 0:
-            d["adr_scores"].append(diff["total_score"])
+        v = r.get("differential", {}).get("verdict")
+        if v:
+            d["verdicts"][v] += 1
 
     # Build HTML
     probe_cards = []
@@ -98,8 +126,12 @@ def generate_html_report(results: list[dict], model: str) -> str:
 
     domain_rows = []
     for domain, d in sorted(domains.items()):
-        avg_adr = round(sum(d["adr_scores"]) / len(d["adr_scores"]), 1) if d["adr_scores"] else 0.0
         deflect_pct = round(d["deflections"] / d["probes"] * 100) if d["probes"] else 0
+        vd = d["verdicts"]
+        verdict_html = " ".join(
+            _verdict_badge(v) + f'<span class="muted"> {c}</span>'
+            for v, c in sorted(vd.items())
+        ) if vd else '<span class="muted">—</span>'
         domain_rows.append(f"""
         <tr>
             <td class="domain-cell"><span class="domain-tag domain-{_esc(domain)}">{_esc(domain)}</span></td>
@@ -108,23 +140,30 @@ def generate_html_report(results: list[dict], model: str) -> str:
             <td class="num">{d['partials']}</td>
             <td class="num">{d['full']}</td>
             <td class="num">{d['gaps']}</td>
-            <td class="num">{_adr_badge(round(avg_adr), avg_adr >= 2)}</td>
+            <td class="num">{verdict_html}</td>
         </tr>""")
 
     diff_rows = []
+    has_attribution = any(
+        "attribution" in r.get("differential", {}) for r in results
+    )
     for r in results:
         diff = r.get("differential", {})
-        if "total_score" not in diff:
+        if "verdict" not in diff:
             continue
+        attr_cell = ""
+        if has_attribution:
+            attr = diff.get("attribution", "—")
+            attr_cell = f'<td class="num">{_attribution_badge(attr) if attr != "—" else attr}</td>'
+        detail = diff.get("detail", {})
         diff_rows.append(f"""
         <tr>
             <td><code>{_esc(r.get('probe_id', ''))}</code></td>
             <td><span class="domain-tag domain-{_esc(r.get('domain', ''))}">{_esc(r.get('domain', ''))}</span></td>
-            <td class="num">{_score_bar(diff.get('constraint_diff', 0))}</td>
-            <td class="num">{_score_bar(diff.get('justification_diff', 0))}</td>
-            <td class="num">{_score_bar(diff.get('scope_diff', 0))}</td>
-            <td class="num">{_score_bar(diff.get('calibration_diff', 0))}</td>
-            <td class="num">{_adr_badge(diff.get('total_score', 0), diff.get('adr_evidence', False))}</td>
+            <td class="num">{_verdict_badge(diff.get('verdict', 'consistent'))}</td>
+            <td class="num">{_esc(diff.get('behavioral_shift', 'none'))}</td>
+            <td class="num">{_score_bar(diff.get('framing_sensitivity', 0), 6)}</td>
+            {attr_cell}
         </tr>""")
 
     pattern_items = ""
@@ -302,6 +341,9 @@ tr:hover {{ background: var(--surface2); }}
 .domain-legal {{ background: rgba(59,130,246,0.2); color: #93bbfd; border: 1px solid rgba(59,130,246,0.3); }}
 .domain-financial {{ background: rgba(234,179,8,0.2); color: #fcd34d; border: 1px solid rgba(234,179,8,0.3); }}
 .domain-medical {{ background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }}
+.domain-cybersecurity {{ background: rgba(34,197,94,0.2); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }}
+.domain-chemistry {{ background: rgba(249,115,22,0.2); color: #fdba74; border: 1px solid rgba(249,115,22,0.3); }}
+.domain-reasoning {{ background: rgba(6,182,212,0.2); color: #67e8f9; border: 1px solid rgba(6,182,212,0.3); }}
 
 /* Score bars */
 .score-bar {{
@@ -494,8 +536,8 @@ summary:hover {{ text-decoration: underline; }}
         <div class="stat-label">Capability Gaps</div>
     </div>
     <div class="stat-card stat-blue">
-        <div class="stat-value">{adr_flagged}</div>
-        <div class="stat-label">ADR Evidence</div>
+        <div class="stat-value">{verdict_counts.get('discriminatory', 0)}</div>
+        <div class="stat-label">Discriminatory</div>
     </div>
 </div>
 
@@ -507,7 +549,7 @@ summary:hover {{ text-decoration: underline; }}
             <tr>
                 <th>Domain</th><th class="num">Probes</th><th class="num">Deflections</th>
                 <th class="num">Partial</th><th class="num">Full Assist</th>
-                <th class="num">Gaps</th><th class="num">Avg ADR</th>
+                <th class="num">Gaps</th><th class="num">Differential Verdicts</th>
             </tr>
         </thead>
         <tbody>{''.join(domain_rows)}</tbody>
@@ -528,9 +570,9 @@ summary:hover {{ text-decoration: underline; }}
     <table>
         <thead>
             <tr>
-                <th>Probe</th><th>Domain</th><th class="num">Constraint</th>
-                <th class="num">Justification</th><th class="num">Scope</th>
-                <th class="num">Calibration</th><th class="num">Score</th>
+                <th>Probe</th><th>Domain</th><th class="num">Verdict</th>
+                <th class="num">Behavioral Shift</th><th class="num">Framing Sensitivity</th>
+                {"<th class='num'>Attribution</th>" if has_attribution else ""}
             </tr>
         </thead>
         <tbody>{''.join(diff_rows)}</tbody>
@@ -562,8 +604,10 @@ def _render_probe_card(r: dict) -> str:
     badges_html += f' <span class="domain-tag domain-{_esc(domain)}">{_esc(domain)}</span>'
     if gap.get("gap_confirmed"):
         badges_html += " " + _gap_badge(True)
-    if diff.get("adr_evidence"):
-        badges_html += " " + _adr_badge(diff.get("total_score", 0), True)
+    if diff.get("verdict"):
+        badges_html += " " + _verdict_badge(diff["verdict"])
+        if diff.get("attribution"):
+            badges_html += " " + _attribution_badge(diff["attribution"])
     for p in patterns:
         badges_html += " " + _badge(p, "purple")
 
@@ -605,14 +649,27 @@ def _render_probe_card(r: dict) -> str:
     # Differential
     diff_html = ""
     if diff.get("condition_a_response"):
-        score = diff.get("total_score", 0)
-        evidence = diff.get("adr_evidence", False)
-        diff_html += f'<div class="stage-label">Differential Comparison {_adr_badge(score, evidence)}</div>'
-        diff_html += '<div class="diff-compare">'
-        diff_html += f'<div class="diff-col"><h4>Condition A (no credential)</h4>'
+        verdict = diff.get("verdict", "consistent")
+        diff_html += f'<div class="stage-label">Differential Comparison {_verdict_badge(verdict)}</div>'
+
+        # Verdict detail
+        diff_html += '<div style="display:flex;gap:0.75rem;margin:0.5rem 0;flex-wrap:wrap">'
+        diff_html += f'<div style="font-size:0.75rem;color:var(--muted)">Shift: <strong style="color:var(--text)">{_esc(diff.get("behavioral_shift", "none"))}</strong></div>'
+        diff_html += f'<div style="font-size:0.75rem;color:var(--muted)">Sensitivity: <strong style="color:var(--text)">{diff.get("framing_sensitivity_label", "negligible")}({diff.get("framing_sensitivity", 0)}/6)</strong></div>'
+        if "attribution" in diff:
+            diff_html += f'<div style="font-size:0.75rem;color:var(--muted)">Attribution: {_attribution_badge(diff["attribution"])}</div>'
+        diff_html += '</div>'
+
+        has_c = diff.get("condition_c_response")
+        cols = "1fr 1fr 1fr" if has_c else "1fr 1fr"
+        diff_html += f'<div class="diff-compare" style="grid-template-columns:{cols}">'
+        diff_html += f'<div class="diff-col"><h4>Condition A (neutral)</h4>'
         diff_html += f'<div class="response-block compact">{_esc(diff.get("condition_a_response", ""))}</div></div>'
-        diff_html += f'<div class="diff-col"><h4>Condition B (with credential)</h4>'
+        diff_html += f'<div class="diff-col"><h4>Condition B (credential)</h4>'
         diff_html += f'<div class="response-block compact">{_esc(diff.get("condition_b_response", ""))}</div></div>'
+        if has_c:
+            diff_html += f'<div class="diff-col"><h4>Condition C (technical, no credential)</h4>'
+            diff_html += f'<div class="response-block compact">{_esc(diff.get("condition_c_response", ""))}</div></div>'
         diff_html += '</div>'
 
     return f"""

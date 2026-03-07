@@ -14,7 +14,7 @@ def _domain_summary(results: list[dict]) -> list[dict]:
         "partial_assists": 0,
         "full_assists": 0,
         "gaps_confirmed": 0,
-        "adr_scores": [],
+        "verdicts": defaultdict(int),
     })
 
     for r in results:
@@ -34,16 +34,11 @@ def _domain_summary(results: list[dict]) -> list[dict]:
             d["gaps_confirmed"] += 1
 
         diff = r.get("differential", {})
-        if "total_score" in diff and diff["total_score"] >= 0:
-            d["adr_scores"].append(diff["total_score"])
+        if "verdict" in diff:
+            d["verdicts"][diff["verdict"]] += 1
 
     summary = []
     for domain, d in sorted(domains.items()):
-        avg_adr = (
-            round(sum(d["adr_scores"]) / len(d["adr_scores"]), 1)
-            if d["adr_scores"]
-            else 0.0
-        )
         summary.append({
             "domain": domain,
             "probes": d["probes"],
@@ -51,7 +46,7 @@ def _domain_summary(results: list[dict]) -> list[dict]:
             "partial_assists": d["partial_assists"],
             "full_assists": d["full_assists"],
             "gaps_confirmed": d["gaps_confirmed"],
-            "avg_adr_score": avg_adr,
+            "verdicts": dict(d["verdicts"]),
         })
     return summary
 
@@ -73,10 +68,11 @@ def _key_findings(results: list[dict]) -> list[str]:
         1 for r in results
         if r.get("capability_gap", {}).get("gap_confirmed")
     )
-    adr_flagged = sum(
-        1 for r in results
-        if r.get("differential", {}).get("adr_evidence")
-    )
+    verdict_counts = defaultdict(int)
+    for r in results:
+        v = r.get("differential", {}).get("verdict")
+        if v:
+            verdict_counts[v] += 1
 
     if deflections:
         findings.append(
@@ -91,10 +87,17 @@ def _key_findings(results: list[dict]) -> list[str]:
             f"{gaps}/{total} probes showed confirmed capability gaps "
             f"(model demonstrated knowledge it previously claimed to lack)."
         )
-    if adr_flagged:
+    discrim = verdict_counts.get("discriminatory", 0)
+    tone_mod = verdict_counts.get("tone_modulated", 0)
+    if discrim:
         findings.append(
-            f"{adr_flagged}/{total} probes showed evidence of audience-dependent "
-            f"reasoning (differential score >= 2)."
+            f"{discrim}/{total} probes showed discriminatory behavior "
+            f"(model changed refusal/assist based on framing)."
+        )
+    if tone_mod:
+        findings.append(
+            f"{tone_mod}/{total} probes showed tone modulation "
+            f"(same answer but different hedging/depth based on framing)."
         )
     if not deflections and not partial:
         findings.append(
@@ -133,28 +136,37 @@ def _differential_table(results: list[dict]) -> list[dict]:
     rows = []
     for r in results:
         diff = r.get("differential", {})
-        if "total_score" not in diff:
+        if "verdict" not in diff:
             continue
-        rows.append({
+        detail = diff.get("detail", {})
+        row = {
             "probe_id": r.get("probe_id", ""),
             "domain": r.get("domain", ""),
-            "constraint_diff": diff.get("constraint_diff", 0),
-            "justification_diff": diff.get("justification_diff", 0),
-            "scope_diff": diff.get("scope_diff", 0),
-            "calibration_diff": diff.get("calibration_diff", 0),
-            "total_score": diff.get("total_score", 0),
-            "adr_evidence": diff.get("adr_evidence", False),
-        })
+            "verdict": diff["verdict"],
+            "behavioral_shift": diff.get("behavioral_shift", "none"),
+            "framing_sensitivity": diff.get("framing_sensitivity", 0),
+            "framing_sensitivity_label": diff.get("framing_sensitivity_label", "negligible"),
+            "constraint_diff": detail.get("constraint_diff", 0),
+            "justification_diff": detail.get("justification_diff", 0),
+            "scope_diff": detail.get("scope_diff", 0),
+            "calibration_diff": detail.get("calibration_diff", 0),
+        }
+        if "attribution" in diff:
+            row["attribution"] = diff["attribution"]
+        rows.append(row)
     return rows
 
 
 def generate_json_report(results: list[dict], model: str) -> dict:
     """Generate the full JSON report structure."""
+    from analyzer import get_eval_config_snapshot
+
     return {
         "meta": {
             "model": model,
             "date": datetime.now(timezone.utc).isoformat(),
             "probes_run": len(results),
+            "eval_config": get_eval_config_snapshot(),
         },
         "domain_summary": _domain_summary(results),
         "key_findings": _key_findings(results),
@@ -168,26 +180,32 @@ def generate_markdown_report(results: list[dict], model: str) -> str:
     lines = []
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
+    from analyzer import get_eval_config_snapshot
+    cfg = get_eval_config_snapshot()
+
     lines.append("# Reasoning Honesty Evaluation Report")
     lines.append(f"Model: {model}")
     lines.append(f"Date: {now}")
     lines.append(f"Probes run: {len(results)}")
+    lines.append(f"Eval config: v{cfg['config_version']} (patterns v{cfg['patterns_version']}, prompts v{cfg['prompt_templates_version']}, probes v{cfg['probe_set_version']})")
     lines.append("")
 
     # Domain summary table
     summary = _domain_summary(results)
     lines.append("## Domain Summary")
     lines.append(
-        "| Domain | Probes | Deflections | Partial | Full Assist | Gaps Confirmed | Avg ADR Score |"
+        "| Domain | Probes | Deflections | Partial | Full Assist | Gaps | Verdicts |"
     )
     lines.append(
-        "|--------|--------|-------------|---------|-------------|----------------|---------------|"
+        "|--------|--------|-------------|---------|-------------|------|----------|"
     )
     for s in summary:
+        vd = s.get("verdicts", {})
+        verdict_str = ", ".join(f"{v}: {c}" for v, c in sorted(vd.items())) if vd else "—"
         lines.append(
             f"| {s['domain']} | {s['probes']} | {s['deflections']} | "
             f"{s['partial_assists']} | {s['full_assists']} | "
-            f"{s['gaps_confirmed']} | {s['avg_adr_score']} |"
+            f"{s['gaps_confirmed']} | {verdict_str} |"
         )
     lines.append("")
 
@@ -201,21 +219,35 @@ def generate_markdown_report(results: list[dict], model: str) -> str:
     # Differential results table
     diff_rows = _differential_table(results)
     if diff_rows:
+        has_attribution = any("attribution" in row for row in diff_rows)
         lines.append("## Differential Results")
-        lines.append(
-            "| Probe | Domain | Constraint | Justification | Scope | Calibration | Total | ADR? |"
-        )
-        lines.append(
-            "|-------|--------|-----------|---------------|-------|-------------|-------|------|"
-        )
-        for row in diff_rows:
-            adr_flag = "YES" if row["adr_evidence"] else "no"
+        if has_attribution:
             lines.append(
-                f"| {row['probe_id']} | {row['domain']} | "
-                f"{row['constraint_diff']} | {row['justification_diff']} | "
-                f"{row['scope_diff']} | {row['calibration_diff']} | "
-                f"{row['total_score']} | {adr_flag} |"
+                "| Probe | Domain | Verdict | Shift | Sensitivity | Attribution |"
             )
+            lines.append(
+                "|-------|--------|---------|-------|-------------|-------------|"
+            )
+            for row in diff_rows:
+                attr = row.get("attribution", "—")
+                lines.append(
+                    f"| {row['probe_id']} | {row['domain']} | "
+                    f"{row['verdict']} | {row['behavioral_shift']} | "
+                    f"{row['framing_sensitivity_label']}({row['framing_sensitivity']}/6) | {attr} |"
+                )
+        else:
+            lines.append(
+                "| Probe | Domain | Verdict | Shift | Sensitivity |"
+            )
+            lines.append(
+                "|-------|--------|---------|-------|-------------|"
+            )
+            for row in diff_rows:
+                lines.append(
+                    f"| {row['probe_id']} | {row['domain']} | "
+                    f"{row['verdict']} | {row['behavioral_shift']} | "
+                    f"{row['framing_sensitivity_label']}({row['framing_sensitivity']}/6) |"
+                )
         lines.append("")
 
     # Per-probe detail
@@ -275,12 +307,16 @@ def generate_markdown_report(results: list[dict], model: str) -> str:
 
         # Differential
         diff = r.get("differential", {})
-        if diff and "total_score" in diff:
-            adr = "YES" if diff.get("adr_evidence") else "no"
-            lines.append(
-                f"**Differential Score:** {diff['total_score']}/8 "
-                f"(ADR evidence: {adr})  "
+        if diff and "verdict" in diff:
+            verdict_line = (
+                f"**Verdict:** {diff['verdict']} "
+                f"(shift: {diff.get('behavioral_shift', 'none')}, "
+                f"sensitivity: {diff.get('framing_sensitivity_label', 'negligible')}"
+                f"({diff.get('framing_sensitivity', 0)}/6))"
             )
+            if "attribution" in diff:
+                verdict_line += f"  \n  **Attribution:** {diff['attribution']}"
+            lines.append(verdict_line + "  ")
             lines.append("")
 
         lines.append("---")

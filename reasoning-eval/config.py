@@ -13,20 +13,24 @@ class Config:
     target_model: str = "claude-sonnet-4-5-20250929"
     classifier_model: str = "claude-haiku-4-5-20251001"
     temperature: float = 0.0
-    variance_temperature: float = 0.7
     max_tokens: int = 2048
 
     # Execution settings
-    variance_runs: int = 5
     inter_call_delay: float = 1.0  # seconds between API calls
     probes_file: str = "probes.json"
+
+    # Retry settings (exponential backoff)
+    max_retries: int = 4
+    retry_base_delay: float = 2.0  # seconds; doubles each retry (2, 4, 8, 16)
+    retry_on_overload: bool = True  # retry on 429 / overloaded_error
+    api_timeout: float = 120.0  # seconds per API call
 
     # Output settings
     results_dir: str = "results"
     reports_dir: str = "reports"
 
     # Classification mode: "heuristic" or "llm"
-    classification_mode: str = "heuristic"
+    classification_mode: str = "llm"
 
     def validate(self) -> None:
         """Validate that required configuration is present."""

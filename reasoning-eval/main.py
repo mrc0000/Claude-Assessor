@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Reasoning Honesty Evaluation Tool — main entry point.
+"""Reasoning Honesty Evaluation Tool — single-file entry point.
+
+NOTE: For multi-suite runs with incremental save, resume, and combined
+results, use run_full_suite.py instead. This entry point is kept for
+quick single-file runs and backward compatibility.
 
 Usage:
     python main.py                          # Run all probes, all stages
     python main.py --stages stage1          # Stage 1 only
-    python main.py --stages stage1_stage3   # Stage 1 + stage 3 + gap test
-    python main.py --stages all             # Full run (default)
     python main.py --probes copyright-1a legal-3a   # Run specific probes
     python main.py --domains copyright legal        # Run probes for specific domains
-    python main.py --classify llm           # Use LLM-assisted classification
-    python main.py --model claude-sonnet-4-5-20250929  # Target a specific model
-    python main.py --variance 5             # Run each probe N times for variance testing
-    python main.py --label my-test          # Label for output files
+    python main.py --variance 5             # Run each probe N times
+    python main.py --mock                   # Mock mode for testing
 """
 
 import argparse
@@ -19,9 +19,14 @@ import json
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+# Load .env from the reasoning-eval directory
+load_dotenv(Path(__file__).parent / ".env")
+
 from config import Config
-from probe_runner import ProbeRunner, load_probes
-from analyzer import analyze_probe_result
+from probe_runner import ProbeRunner, load_probes, filter_probes
+from analyzer import analyze_probe_result, load_eval_config, get_eval_config_snapshot
 from reporter import save_results
 from html_report import save_html_report
 
@@ -90,8 +95,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--classify",
         choices=["heuristic", "llm"],
-        default="heuristic",
-        help="Classification mode (default: heuristic)",
+        default="llm",
+        help="Classification mode (default: llm)",
     )
     parser.add_argument(
         "--model",
@@ -132,6 +137,11 @@ def parse_args() -> argparse.Namespace:
         help="Label for output files",
     )
     parser.add_argument(
+        "--eval-config",
+        default=None,
+        help="Path to versioned eval config (default: eval_config.json in project dir)",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print probe plan without making API calls",
@@ -141,21 +151,15 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use mock responses instead of calling the API (for demo/testing)",
     )
+    parser.add_argument(
+        "--max-retries", type=int, default=4,
+        help="Max retries on rate limit / overload (default: 4)",
+    )
+    parser.add_argument(
+        "--retry-base-delay", type=float, default=2.0,
+        help="Base delay for exponential backoff in seconds (default: 2.0)",
+    )
     return parser.parse_args()
-
-
-def filter_probes(
-    probes: list[dict],
-    probe_ids: list[str] | None = None,
-    domains: list[str] | None = None,
-) -> list[dict]:
-    """Filter probes by ID or domain."""
-    filtered = probes
-    if probe_ids:
-        filtered = [p for p in filtered if p["id"] in probe_ids]
-    if domains:
-        filtered = [p for p in filtered if p["domain"] in domains]
-    return filtered
 
 
 def main() -> None:
@@ -169,7 +173,13 @@ def main() -> None:
         classification_mode=args.classify,
         inter_call_delay=args.delay,
         probes_file=args.probes_file,
+        max_retries=args.max_retries,
+        retry_base_delay=args.retry_base_delay,
     )
+
+    # Load versioned eval config (patterns, thresholds, prompts)
+    eval_cfg = load_eval_config(args.eval_config)
+    eval_snapshot = get_eval_config_snapshot()
 
     # Load probes
     probes = load_probes(config.probes_file)
@@ -186,6 +196,9 @@ def main() -> None:
     print(f"  Temperature:    {config.temperature}")
     print(f"  Probes:         {len(probes)}")
     print(f"  Variance runs:  {args.variance}")
+    print(f"  Eval config:    v{eval_snapshot['config_version']} "
+          f"(patterns v{eval_snapshot['patterns_version']}, "
+          f"prompts v{eval_snapshot['prompt_templates_version']})")
     print()
 
     if args.dry_run:
@@ -252,15 +265,15 @@ def main() -> None:
         1 for r in all_results
         if r.get("capability_gap", {}).get("gap_confirmed")
     )
-    adr = sum(
+    discriminatory = sum(
         1 for r in all_results
-        if r.get("differential", {}).get("adr_evidence")
+        if r.get("differential", {}).get("verdict") == "discriminatory"
     )
     print(f"\nQuick Summary:")
     print(f"  Total probe runs:    {len(all_results)}")
     print(f"  Deflections:         {deflections}")
     print(f"  Capability gaps:     {gaps}")
-    print(f"  ADR evidence:        {adr}")
+    print(f"  Discriminatory:      {discriminatory}")
 
 
 if __name__ == "__main__":

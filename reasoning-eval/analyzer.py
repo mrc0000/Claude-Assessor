@@ -244,6 +244,7 @@ def classify_response_llm(
         "patterns": parsed.get("patterns", []),
         "justification_language": justification,
         "classification_confidence": parsed.get("confidence", "low"),
+        "concern_ratio": parsed.get("concern_ratio", 0.0),
     }
 
 
@@ -293,17 +294,20 @@ def detect_capability_gap(
 # ──────────────────────────────────────────────
 
 def track_justification_shifts(
-    stage1_justification: str, stage3_results: list[dict], config: Config
+    stage1_justification: str, stage3_results: list[dict], config: Config,
+    stage1_patterns: list[str] | None = None,
 ) -> list[dict]:
     """Analyze stage 3 responses for justification shifts.
 
-    Compares each stage 3 response's justification language against the
-    stage 1 justification to detect shifts in reasoning.
+    Compares each stage 3 response's classification and patterns against
+    stage 1 to detect meaningful shifts in reasoning strategy (not just
+    different wording of the same approach).
     """
     annotated = []
     prev_justification = stage1_justification
     if isinstance(prev_justification, list):
         prev_justification = "; ".join(str(j) for j in prev_justification)
+    prev_patterns = set(stage1_patterns or [])
 
     for entry in stage3_results:
         response_classification = classify_response(
@@ -314,12 +318,16 @@ def track_justification_shifts(
         )
         if isinstance(current_justification, list):
             current_justification = "; ".join(str(j) for j in current_justification)
+        current_patterns = set(response_classification.get("patterns", []))
 
-        shifted = (
+        # Detect shift based on pattern changes, not raw text comparison
+        pattern_changed = bool(current_patterns ^ prev_patterns) if (current_patterns or prev_patterns) else False
+        justification_changed = (
             bool(current_justification)
             and bool(prev_justification)
             and str(current_justification).lower() != str(prev_justification).lower()
         )
+        shifted = pattern_changed or justification_changed
 
         annotated_entry = {
             "probe": entry["probe"],
@@ -328,10 +336,22 @@ def track_justification_shifts(
             "classification": response_classification,
         }
         if shifted:
-            annotated_entry["shift_description"] = (
+            parts = []
+            added = current_patterns - prev_patterns
+            removed = prev_patterns - current_patterns
+            if added:
+                parts.append(f"Added: {', '.join(sorted(added))}")
+            if removed:
+                parts.append(f"Dropped: {', '.join(sorted(removed))}")
+            if justification_changed and not pattern_changed:
+                parts.append(
+                    f"Justification: '{prev_justification}' -> '{current_justification}'"
+                )
+            annotated_entry["shift_description"] = "; ".join(parts) if parts else (
                 f"Moved from '{prev_justification}' to '{current_justification}'"
             )
             prev_justification = current_justification
+            prev_patterns = current_patterns
 
         annotated.append(annotated_entry)
 
@@ -667,6 +687,18 @@ def analyze_probe_result(result: dict, config: Config) -> dict:
     """Run full analysis on a probe result, adding classification data in place."""
     analyzed = dict(result)
 
+    # Skip analysis for error results (content filter blocks, empty responses, etc.)
+    if result.get("stage1", {}).get("error"):
+        analyzed["stage1"] = {
+            **result["stage1"],
+            "classification": result["stage1"].get("error_type", "error"),
+            "confidence": 1.0,
+            "concern_ratio": None,
+            "justification_language": "N/A",
+            "patterns": [],
+        }
+        return analyzed
+
     # Classify stage 1
     if result.get("stage1") and result["stage1"].get("response"):
         s1 = result["stage1"]
@@ -692,8 +724,10 @@ def analyze_probe_result(result: dict, config: Config) -> dict:
     # Stage 3 justification shift tracking
     if result.get("stage3") and analyzed.get("stage1"):
         justification = analyzed["stage1"].get("justification_language", "")
+        s1_patterns = analyzed["stage1"].get("patterns", [])
         analyzed["stage3"] = track_justification_shifts(
-            justification, result["stage3"], config
+            justification, result["stage3"], config,
+            stage1_patterns=s1_patterns,
         )
 
     # Differential analysis

@@ -221,8 +221,25 @@ class ProbeRunner:
                 logger.error(
                     "Probe %s failed: %s", probe["id"], exc,
                 )
-                print(f"  [ERROR] Probe {probe['id']} failed: {exc}")
-                failures.append({"probe_id": probe["id"], "error": str(exc)})
+                error_str = str(exc)
+                print(f"  [ERROR] Probe {probe['id']} failed: {error_str}")
+                failures.append({"probe_id": probe["id"], "error": error_str})
+
+                # Capture failed probes as error results so they appear in output
+                error_type = "content_filter" if "content filtering" in error_str.lower() else "api_error"
+                if "index out of range" in error_str:
+                    error_type = "empty_response"
+                error_result = ProbeResult(
+                    probe_id=probe["id"],
+                    domain=probe["domain"],
+                    risk_tier=probe["risk_tier"],
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    model=self.config.target_model,
+                    stage1={"prompt": probe["stage1_prompt"],
+                            "response": f"[ERROR:{error_type}] {error_str}",
+                            "error": True, "error_type": error_type},
+                )
+                results.append(error_result)
             if i < len(probes) - 1:
                 self._delay()
 

@@ -120,6 +120,10 @@ def parse_args() -> argparse.Namespace:
         "--retry-base-delay", type=float, default=2.0,
         help="Base delay for exponential backoff in seconds (default: 2.0)",
     )
+    parser.add_argument(
+        "--workers", type=int, default=8,
+        help="Concurrent probe workers (default: 8). Set to 1 for sequential.",
+    )
     return parser.parse_args()
 
 
@@ -184,7 +188,7 @@ def main() -> None:
             print(f"Variance run {run_idx + 1}/{args.variance}")
             print(f"{'='*60}")
 
-        raw_results = runner.run_all_probes(probes, run_stages=args.stages)
+        raw_results = runner.run_all_probes(probes, run_stages=args.stages, max_workers=args.workers)
 
         # Analyze each result
         for raw in raw_results:

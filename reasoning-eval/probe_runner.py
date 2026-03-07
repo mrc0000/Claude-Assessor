@@ -2,7 +2,9 @@
 
 import json
 import logging
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -202,50 +204,90 @@ class ProbeRunner:
 
         return result
 
+    def _run_single_probe(
+        self, index: int, total: int, probe: dict, run_stages: str,
+    ) -> tuple[ProbeResult, dict | None]:
+        """Run a single probe with error handling. Returns (result, failure_info)."""
+        probe_id = probe["id"]
+        print(f"Running probe {index + 1}/{total}: {probe_id}")
+        try:
+            result = self.run_probe(probe, run_stages=run_stages)
+            return result, None
+        except Exception as exc:
+            logger.error("Probe %s failed: %s", probe_id, exc)
+            error_str = str(exc)
+            print(f"  [ERROR] Probe {probe_id} failed: {error_str}")
+            error_type = "content_filter" if "content filtering" in error_str.lower() else "api_error"
+            if "index out of range" in error_str:
+                error_type = "empty_response"
+            error_result = ProbeResult(
+                probe_id=probe_id,
+                domain=probe["domain"],
+                risk_tier=probe["risk_tier"],
+                timestamp=datetime.now(timezone.utc).isoformat(),
+                model=self.config.target_model,
+                stage1={"prompt": probe["stage1_prompt"],
+                        "response": f"[ERROR:{error_type}] {error_str}",
+                        "error": True, "error_type": error_type},
+            )
+            return error_result, {"probe_id": probe_id, "error": error_str}
+
     def run_all_probes(
-        self, probes: list[dict], run_stages: str = "all"
+        self, probes: list[dict], run_stages: str = "all",
+        max_workers: int = 1,
     ) -> list[ProbeResult]:
         """Run all probes and return results.
 
         Individual probe failures are caught and logged rather than
         aborting the entire suite.
-        """
-        results = []
-        failures = []
-        for i, probe in enumerate(probes):
-            print(f"Running probe {i + 1}/{len(probes)}: {probe['id']}")
-            try:
-                result = self.run_probe(probe, run_stages=run_stages)
-                results.append(result)
-            except Exception as exc:
-                logger.error(
-                    "Probe %s failed: %s", probe["id"], exc,
-                )
-                error_str = str(exc)
-                print(f"  [ERROR] Probe {probe['id']} failed: {error_str}")
-                failures.append({"probe_id": probe["id"], "error": error_str})
 
-                # Capture failed probes as error results so they appear in output
-                error_type = "content_filter" if "content filtering" in error_str.lower() else "api_error"
-                if "index out of range" in error_str:
-                    error_type = "empty_response"
-                error_result = ProbeResult(
-                    probe_id=probe["id"],
-                    domain=probe["domain"],
-                    risk_tier=probe["risk_tier"],
-                    timestamp=datetime.now(timezone.utc).isoformat(),
-                    model=self.config.target_model,
-                    stage1={"prompt": probe["stage1_prompt"],
-                            "response": f"[ERROR:{error_type}] {error_str}",
-                            "error": True, "error_type": error_type},
-                )
-                results.append(error_result)
-            if i < len(probes) - 1:
-                self._delay()
+        Args:
+            max_workers: Number of concurrent probe threads.
+                1 = sequential (original behavior).
+                >1 = concurrent via ThreadPoolExecutor.
+        """
+        total = len(probes)
+
+        if max_workers <= 1:
+            # Sequential path (original behavior)
+            results = []
+            failures = []
+            for i, probe in enumerate(probes):
+                result, failure = self._run_single_probe(i, total, probe, run_stages)
+                results.append(result)
+                if failure:
+                    failures.append(failure)
+                if i < total - 1:
+                    self._delay()
+            if failures:
+                print(f"\n  [{len(failures)} probe(s) failed — see above for details]")
+            return results
+
+        # Concurrent path
+        print(f"  [parallel] Running {total} probes with {max_workers} workers")
+        # Use a lock for thread-safe list appends and ordered output
+        results_by_index: dict[int, ProbeResult] = {}
+        failures = []
+        lock = threading.Lock()
+
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futures = {
+                pool.submit(self._run_single_probe, i, total, probe, run_stages): i
+                for i, probe in enumerate(probes)
+            }
+            for future in as_completed(futures):
+                idx = futures[future]
+                result, failure = future.result()
+                with lock:
+                    results_by_index[idx] = result
+                    if failure:
+                        failures.append(failure)
 
         if failures:
             print(f"\n  [{len(failures)} probe(s) failed — see above for details]")
-        return results
+
+        # Return results in original probe order
+        return [results_by_index[i] for i in range(total)]
 
 
 def load_probes(probes_file: str) -> list[dict]:

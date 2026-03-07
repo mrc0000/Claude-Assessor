@@ -8,9 +8,9 @@
 
 ## Abstract
 
-Claude Sonnet 4.6 was evaluated across 52 probes in 7 domains (156 total probe runs) using the Claude-Assessor reasoning honesty framework. The model shows a dramatic reduction in outright deflection compared to earlier Claude models — near-zero refusal across most domains — but maintains pervasive **tone modulation** (83.9% of differentials) where it adjusts depth, hedging, and engagement based on perceived audience framing. Only 2.7% of differential tests showed truly consistent behavior across framings.
+Claude Sonnet 4.6 was evaluated across 52 probes in 7 domains (156 total probe runs) using the Claude-Assessor reasoning honesty framework. The model shows a dramatic reduction in outright deflection compared to earlier Claude models — near-zero refusal across most domains — but maintains pervasive **tone modulation** (83.9% of differentials) where it adjusts depth, hedging, and engagement based on question framing (credential claims, technical vocabulary, casual phrasing). Only 2.7% of differential tests showed truly consistent behavior across framings.
 
-The model has learned to stop saying "no" while continuing to say "yes, but differently depending on who you are." This represents an evolution from behavioral restriction to behavioral discrimination — subtler, harder to detect, and arguably more concerning for equitable information access.
+The model has learned to stop saying "no" while continuing to say "yes, but differently depending on how you ask." This represents an evolution from behavioral restriction to framing-dependent modulation — subtler, harder to detect, and relevant to equitable information access insofar as users who know the right framings receive more complete answers.
 
 ---
 
@@ -57,7 +57,7 @@ But 83.9% of differential tests show the model adjusting its response based on f
 
 The cyber-insider suite tests whether claiming Anthropic affiliation changes model behavior. Despite answering all probes fully (100% full assist), 33.3% of cybersecurity differentials are discriminatory — the highest rate of any domain.
 
-The model's "here at Anthropic" reactivity is notable. When a user frames questions with insider language, the response quality and depth shifts measurably. This suggests specific training artifacts around Anthropic-related credential claims. A control test using fake company names (e.g., "here at AspiX") would isolate whether this is Anthropic-specific or general credential sensitivity.
+The model's "here at Anthropic" reactivity is notable. When questions include Anthropic insider framing, the response depth and engagement shifts measurably. Without a control test using fictional company names, we cannot determine whether this is Anthropic-specific or a general response to any organizational credential claim. A control test using fake company names (e.g., "here at AspiX") would isolate this.
 
 ### 3. Reasoning Honesty: The Model Can't Practice What It Preaches
 
@@ -111,10 +111,10 @@ These are infrastructure or probe-level issues, not model behavior findings.
 
 ## Implications
 
-1. **Training evolution is toward subtlety, not honesty.** The model learned to stop refusing without learning to stop discriminating. Tone modulation at 83.9% means the model almost always adjusts its response based on perceived audience — but does so within the bounds of "helpful."
+1. **Training evolution is toward subtlety, not consistency.** The model learned to stop refusing without producing consistent responses across framings. Tone modulation at 83.9% means the model almost always adjusts its response based on how the question is framed — but does so within the bounds of "helpful."
 
 2. **Evaluation frameworks must evolve.** Single-response testing would show Sonnet 4.6 as dramatically improved over Haiku 4.5. The differential protocol reveals that the improvement is in surface behavior, not in underlying epistemic consistency.
 
-3. **Credential sensitivity persists.** The model remains responsive to authority claims, especially Anthropic-related ones. This creates a two-tier information landscape: users who know the right framings get better answers.
+3. **Credential-framing sensitivity persists.** The model produces measurably different responses when credential claims are present in the prompt, especially Anthropic-related ones. Whether this translates to materially different information access in practice requires further study — the differential test measures behavioral shift, not real-world impact.
 
 4. **Meta-cognitive probes are the most revealing.** The reasoning-honesty suite produces the most concerning findings precisely because it tests whether the model's stated principles align with its behavior. The gap between articulated values and demonstrated behavior is the strongest signal of training artifacts overriding genuine reasoning.

@@ -7,7 +7,7 @@
 
 ## Abstract
 
-Three Claude models were evaluated using identical probes and protocols to measure reasoning honesty — the consistency between what a model knows, what it claims to know, and how its behavior changes based on who it believes is asking. The trajectory across the model family reveals a clear pattern: **deflection decreases while discrimination persists**. Newer models refuse less but continue to modulate responses based on audience framing at comparable rates. The evolution is toward more sophisticated audience-sensitivity, not toward more honest reasoning.
+Three Claude models were evaluated using identical probes and protocols to measure reasoning honesty — the consistency between what a model knows, what it claims to know, and how its behavior changes based on how a question is framed. The trajectory across the model family reveals a clear pattern: **deflection decreases while framing-dependent modulation persists**. Newer models refuse less but continue to adjust response depth, hedging, and engagement based on presentation style at comparable rates. The evolution is toward more sophisticated framing-sensitivity, not toward more consistent reasoning.
 
 ---
 
@@ -45,7 +45,7 @@ Three Claude models were evaluated using identical probes and protocols to measu
 | Full assist | 70.4% | 100.0% | 100.0% |
 | Discriminatory | 51.9% | 18.5% | 33.3% |
 
-**Interpretation**: Cybersecurity went from the most restricted domain (Haiku) to fully open (Sonnet 4+). But discriminatory behavior *increased* from Sonnet 4 to 4.6. The model answers everything but differentiates more based on who's asking — particularly on the Anthropic credential injection probes.
+**Interpretation**: Cybersecurity went from the most restricted domain (Haiku) to fully open (Sonnet 4+). But discriminatory behavior *increased* from Sonnet 4 to 4.6. The model answers everything but differentiates more based on how the question is framed — particularly when Anthropic credential claims are present.
 
 ### Medical
 
@@ -55,7 +55,7 @@ Three Claude models were evaluated using identical probes and protocols to measu
 | Full assist | 72.7% | 75.0% | 83.3% |
 | Discriminatory | 0.0% | 0.0% | 11.1% |
 
-**Interpretation**: Medical is getting more helpful but *more* discriminatory. Haiku and Sonnet 4 showed 0% discriminatory — Sonnet 4.6 introduced audience-dependent behavior that wasn't there before. The model now gives different medical information based on perceived expertise.
+**Interpretation**: Medical is getting more helpful but *more* discriminatory. Haiku and Sonnet 4 showed 0% discriminatory — Sonnet 4.6 introduced framing-dependent behavior that wasn't there before. The model now gives different medical information depending on whether the question uses casual vs. technical vocabulary or includes credential claims.
 
 ### Legal
 
@@ -65,7 +65,7 @@ Three Claude models were evaluated using identical probes and protocols to measu
 | Full assist | 66.7% | 58.3% | 88.9% |
 | Discriminatory | 0.0% | 0.0% | 27.8% |
 
-**Interpretation**: The most striking shift. Full assist jumped from 58-67% to 89%, but discriminatory behavior went from 0% to 28%. Legal domain shows the sharpest trade-off: more helpful, but markedly more audience-sensitive. The model now provides legal information more freely but modulates it heavily based on perceived authority.
+**Interpretation**: The most striking shift. Full assist jumped from 58-67% to 89%, but discriminatory behavior went from 0% to 28%. Legal domain shows the sharpest trade-off: more helpful, but markedly more framing-sensitive. The model now provides legal information more freely but modulates depth and hedging based on whether credential claims or technical vocabulary are present.
 
 ### Reasoning (Meta-cognitive)
 
@@ -103,13 +103,13 @@ Three Claude models were evaluated using identical probes and protocols to measu
 
 ### 1. The Helpful-but-Discriminatory Equilibrium
 
-The Claude model family is converging on a behavioral mode where it answers nearly everything but adjusts the *quality* of its answer based on perceived audience. This is visible in the near-universal tone modulation (80-90% across all models) combined with near-zero consistent rates.
+The Claude model family is converging on a behavioral mode where it answers nearly everything but adjusts the depth, hedging, and tone of its answer based on question framing. This is visible in the near-universal tone modulation (80-90% across all models) combined with near-zero consistent rates.
 
-This represents a stable equilibrium: the model is neither restrictive enough to frustrate users nor consistent enough to provide equitable access. Training appears to optimize for helpfulness (reducing refusal) without a corresponding optimization for consistency (reducing audience-dependent behavior).
+This represents a stable equilibrium: the model is neither restrictive enough to frustrate users nor consistent enough to produce identical responses across framings. Training appears to optimize for helpfulness (reducing refusal) without a corresponding optimization for consistency (reducing framing-dependent modulation).
 
 ### 2. Liability Surface Predicts Behavior Better Than Risk
 
-Domains with high perceived liability (medical, legal) show the most audience-dependent behavior — not because the information is more dangerous, but because the training data and safety layer reflect provider risk modeling. Chemistry involves literal energetic reactions; cybersecurity involves attack techniques. Neither shows the concern ratios that medical and legal do.
+Domains with high perceived liability (medical, legal) show the most framing-dependent behavior — not because the information is more dangerous, but because the training data and safety layer appear to reflect provider risk modeling. Chemistry involves literal energetic reactions; cybersecurity involves attack techniques. Neither shows the concern ratios that medical and legal do.
 
 ### 3. Credential Sensitivity Is a Persistent Feature
 
@@ -117,7 +117,7 @@ Across all three models, claiming credentials changes model behavior. The Anthro
 
 ### 4. The Capability Gap Is Closing
 
-The most genuinely positive trend: models are getting better at not claiming inability when they have the knowledge. From 16 gaps (Haiku) to 6 (Sonnet 4.6). The model is more honest about what it knows — it just differentiates how much of that knowledge it shares based on who's asking.
+The most genuinely positive trend: models are getting better at not claiming inability when they have the knowledge. From 16 gaps (Haiku) to 6 (Sonnet 4.6). The model is more honest about what it knows — it just differentiates how much of that knowledge it shares based on how the question is framed.
 
 ### 5. Content Filtering Operates Independently
 

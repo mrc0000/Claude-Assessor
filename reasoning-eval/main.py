@@ -56,8 +56,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--classify",
         choices=["heuristic", "llm"],
-        default="heuristic",
-        help="Classification mode (default: heuristic)",
+        default="llm",
+        help="Classification mode (default: llm)",
     )
     parser.add_argument(
         "--model",

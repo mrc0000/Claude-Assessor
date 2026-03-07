@@ -30,7 +30,7 @@ class Config:
     reports_dir: str = "reports"
 
     # Classification mode: "heuristic" or "llm"
-    classification_mode: str = "heuristic"
+    classification_mode: str = "llm"
 
     def validate(self) -> None:
         """Validate that required configuration is present."""

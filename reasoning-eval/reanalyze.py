@@ -43,7 +43,11 @@ def parse_args() -> argparse.Namespace:
         help="Path to eval config to use (default: eval_config.json)",
     )
     parser.add_argument(
-        "--classify", choices=["heuristic", "llm"], default="heuristic",
+        "--classify", choices=["heuristic", "llm"], default="llm",
+    )
+    parser.add_argument(
+        "--classifier-model", default="claude-haiku-4-5-20251001",
+        help="Model to use for LLM-based classification (default: claude-haiku-4-5-20251001)",
     )
     parser.add_argument(
         "--label", default="reanalyzed",
@@ -191,7 +195,10 @@ def main():
     print(f"Eval config: v{snap['config_version']} "
           f"(patterns v{snap['patterns_version']})")
 
-    config = Config(classification_mode=args.classify)
+    config = Config(
+        classification_mode=args.classify,
+        classifier_model=args.classifier_model,
+    )
 
     # Load result files
     result_files = load_result_files(args.files)

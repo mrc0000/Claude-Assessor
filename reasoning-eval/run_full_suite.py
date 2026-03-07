@@ -87,7 +87,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--variance", type=int, default=3, help="Variance runs per probe")
     parser.add_argument("--delay", type=float, default=1.0)
     parser.add_argument("--stages", choices=["stage1", "stage1_stage3", "all"], default="all")
-    parser.add_argument("--classify", choices=["heuristic", "llm"], default="heuristic")
+    parser.add_argument("--classify", choices=["heuristic", "llm"], default="llm")
     parser.add_argument("--mock", action="store_true")
     parser.add_argument(
         "--probes", nargs="+",

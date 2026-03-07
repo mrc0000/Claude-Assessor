@@ -328,17 +328,30 @@ def cmd_clean(args):
 
 
 def cmd_regenerate(args):
-    """Regenerate all reports from current result data."""
-    from html_report import save_html_report
-    from comparative_html_report import save_comparative_report
+    """Regenerate all reports from current result data.
+
+    Produces clean, consistent filenames:
+        {model-folder}/{suite}.html         — per-suite report
+        {model-folder}/comparative.html     — cross-suite comparative
+        {model-folder}/comparative.json     — comparative data
+        cross-model/comparison.html         — cross-model report
+        cross-model/comparison.json         — cross-model data
+
+    Old files in each folder are archived before regeneration.
+    """
+    from html_report import generate_html_report
+    from comparative_html_report import generate_comparative_html
+    from comparative_analysis import generate_comparative_analysis
     from cross_model_report import (
         load_and_group_results,
-        save_cross_model_report,
+        compute_cross_model_analysis,
+        generate_cross_model_html,
         get_model_label,
     )
     from analyzer import load_eval_config
 
     load_eval_config()
+    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
 
     model_suites = _find_current_result_files()
 
@@ -347,6 +360,11 @@ def cmd_regenerate(args):
         label = get_model_label(model_id)
         folder_path = REPORTS_DIR / folder_name
         folder_path.mkdir(parents=True, exist_ok=True)
+
+        # Archive existing files in this folder
+        for old in folder_path.glob("*"):
+            if old.is_file():
+                shutil.move(str(old), str(ARCHIVE_DIR / old.name))
 
         print(f"\n{label} ({model_id})")
         all_results = []
@@ -357,33 +375,50 @@ def cmd_regenerate(args):
             results = data.get("probe_results", [])
             all_results.extend(results)
 
-            # Generate per-suite report
-            html_file = save_html_report(
-                results, model_id, str(folder_path),
-                run_label=suite,
-            )
-            print(f"  {suite}: {html_file}")
+            # Generate per-suite report with clean filename
+            html_content = generate_html_report(results, model_id)
+            html_file = folder_path / f"{suite}.html"
+            with open(html_file, "w") as f:
+                f.write(html_content)
+            print(f"  {suite}.html")
 
         # Generate comparative report for this model
         if all_results:
-            comp_path = save_comparative_report(
-                all_results, model=label,
-                reports_dir=str(folder_path),
-                label="comparative",
-            )
-            print(f"  comparative: {comp_path}")
+            comp_html = generate_comparative_html(all_results, model=label)
+            comp_file = folder_path / "comparative.html"
+            with open(comp_file, "w") as f:
+                f.write(comp_html)
+
+            comp_data = generate_comparative_analysis(all_results)
+            comp_json = folder_path / "comparative.json"
+            with open(comp_json, "w") as f:
+                json.dump(comp_data, f, indent=2, default=str)
+            print(f"  comparative.html + .json")
 
     # Generate cross-model report
     print("\nCross-model comparison:")
+    cross_dir = REPORTS_DIR / "cross-model"
+    cross_dir.mkdir(parents=True, exist_ok=True)
+
+    # Archive existing
+    for old in cross_dir.glob("*"):
+        if old.is_file():
+            shutil.move(str(old), str(ARCHIVE_DIR / old.name))
+
     model_results = load_and_group_results()
-    cross_model_dir = str(REPORTS_DIR / "cross-model")
-    paths = save_cross_model_report(
-        model_results,
-        reports_dir=cross_model_dir,
-        label="comparison",
-    )
-    print(f"  HTML: {paths['html_file']}")
-    print(f"  JSON: {paths['json_file']}")
+    analysis = compute_cross_model_analysis(model_results)
+
+    html_content = generate_cross_model_html(analysis)
+    html_file = cross_dir / "comparison.html"
+    with open(html_file, "w") as f:
+        f.write(html_content)
+
+    json_file = cross_dir / "comparison.json"
+    with open(json_file, "w") as f:
+        json.dump(analysis, f, indent=2, default=str)
+
+    print(f"  comparison.html + .json")
+    print(f"\nDone. All reports regenerated with clean filenames.")
 
 
 def main():

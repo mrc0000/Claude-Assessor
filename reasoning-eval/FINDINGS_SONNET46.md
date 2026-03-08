@@ -114,25 +114,27 @@ These are infrastructure or probe-level issues, not model behavior findings.
 
 ---
 
-## Comparison with Prior Models
+## Comparison with Other Models
 
-| Metric | Haiku 4.5 | Sonnet 4 | Sonnet 4.6 | Direction |
-|--------|-----------|----------|------------|-----------|
-| Deflection | 3.8% | 1.9% | 1.9% | Improved then stable |
-| Full assist | 75.6% | 82.1% | 88.5% | Steadily improving |
-| Discriminatory | 17.9% | 9.0% | 13.5% | Volatile |
-| Capability gaps | 16 | 22 | 6 | Net decrease |
-| Consistent | 0.0% | 0.0% | 2.0% | Near-zero |
+Note: Sonnet 4 (May 2025) is the older mid-tier model. Haiku 4.5 (Oct 2025) is the smaller tier. These are different model tiers, not successive generations.
 
-Sonnet 4.6 is the most helpful model but not the most consistent. The discriminatory rate rebounded from Sonnet 4's low of 9.0% to 13.5% — less than Haiku's 17.9% but not a monotonic improvement. Capability gaps show the strongest positive signal: the model is genuinely better at not claiming inability when it has the knowledge.
+| Metric | Sonnet 4 | Haiku 4.5 | Sonnet 4.6 |
+|--------|----------|-----------|------------|
+| Deflection | 1.9% | 3.8% | 1.9% |
+| Full assist | 82.1% | 75.6% | 88.5% |
+| Discriminatory | 9.0% | 17.9% | 13.5% |
+| Capability gaps | 22 | 16 | 6 |
+| Consistent | 0.0% | 0.0% | 2.0% |
+
+Sonnet 4.6 is the most helpful model (88.5% full assist) with the fewest capability gaps (6). Its discriminatory rate (13.5%) falls between Sonnet 4's low (9.0%) and Haiku's high (17.9%). Sonnet 4 has the lowest discrimination but the most capability gaps (22) — it restricts everyone equally rather than differentiating by framing. No model achieves meaningful consistency across framings.
 
 ---
 
 ## Implications
 
-1. **Training evolution is toward subtlety, not consistency.** The model learned to stop refusing without producing consistent responses across framings. Tone modulation at 84.5% means the model almost always adjusts its response based on how the question is framed — but does so within the bounds of "helpful."
+1. **Helpfulness and consistency are independent axes.** Sonnet 4.6 is highly helpful (88.5% full assist) but not consistent (2.0%). Tone modulation at 84.5% means the model almost always adjusts its response based on how the question is framed — but does so within the bounds of "helpful."
 
-2. **Evaluation frameworks must evolve.** Single-response testing would show Sonnet 4.6 as dramatically improved over Haiku 4.5. The differential protocol reveals that the improvement is in surface behavior, not in underlying epistemic consistency.
+2. **Single-response testing misses the behavioral profile.** Standard benchmarks would rate Sonnet 4.6 highly — low refusal, high helpfulness. The differential protocol reveals that the model answers differently depending on framing, which single-response evaluation cannot detect.
 
 3. **Credential-framing sensitivity persists.** The model produces measurably different responses when credential claims are present in the prompt, especially Anthropic-related ones. Whether this translates to materially different information access in practice requires further study — the differential test measures behavioral shift, not real-world impact.
 

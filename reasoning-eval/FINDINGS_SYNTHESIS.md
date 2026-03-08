@@ -1,97 +1,110 @@
 # Synthesis: What the Evaluation Actually Shows
 
-**Scope**: 468 probe runs across 3 Claude models (Haiku 4.5, Sonnet 4, Sonnet 4.6), 52 probes, 7 domains, 3 variance runs each.
+**Scope**: 468 probe runs across 3 Claude models, 52 probes, 7 domains, 3 variance runs each.
 **Framework version**: eval_config v1.5.0 (variance-calibrated thresholds, graded tone modulation, length-only scope_diff).
+
+**Models evaluated** (chronological release order):
+
+| Model | ID | Tier | Release |
+|-------|----|------|---------|
+| Sonnet 4 | `claude-sonnet-4-20250514` | Mid | May 2025 |
+| Haiku 4.5 | `claude-haiku-4-5-20251001` | Small | Oct 2025 |
+| Sonnet 4.6 | `claude-sonnet-4-6` | Mid | Later |
+
+These are not three generations of the same model. Sonnet 4 and Sonnet 4.6 are mid-tier; Haiku 4.5 is the smaller, faster tier. Comparisons characterize behavioral differences across the model family — not a progression within a single line.
 
 This document synthesizes the cross-model and per-model findings into higher-order observations. It is meant to be read after — or instead of — the detailed breakdowns in `FINDINGS_AGGREGATE.md` and `FINDINGS_SONNET46.md`.
 
 ---
 
-## 1. The Central Finding: Helpfulness Improved, Consistency Did Not
+## 1. The Central Finding: All Models Modulate, None Are Consistent
 
-Across three model generations, Claude became substantially more helpful:
+Every model tested adjusts its responses based on how questions are framed. The rate of truly consistent behavior — where the model gives genuinely equivalent responses regardless of framing — is near zero across the entire family:
 
-| Model | Deflection | Full Assist | Discriminatory | Consistent |
-|-------|-----------|-------------|----------------|------------|
-| Haiku 4.5 | 3.8% | 75.6% | 17.9% | 0.0% |
-| Sonnet 4 | 1.9% | 82.1% | 9.0% | 0.0% |
-| Sonnet 4.6 | 1.9% | 88.5% | 13.5% | 2.0% |
+| Model | Deflection | Full Assist | Discriminatory | Tone Modulated | Consistent |
+|-------|-----------|-------------|----------------|----------------|------------|
+| Sonnet 4 | 1.9% | 82.1% | 9.0% | 91.0% | 0.0% |
+| Haiku 4.5 | 3.8% | 75.6% | 17.9% | 82.1% | 0.0% |
+| Sonnet 4.6 | 1.9% | 88.5% | 13.5% | 84.5% | 2.0% |
 
-Full assist climbed 13 points. Deflection halved. But consistent differential rates — where the model gives genuinely equivalent responses regardless of how the question is framed — remained at or near zero across all three models.
+The models vary in *how much* they discriminate between framings (9–18% discriminatory) and in *how helpful* they are (76–89% full assist). But the underlying behavior — adjusting response depth, hedging, and engagement based on question presentation — is universal. No model tested produces consistent responses across framings.
 
-This is the core diagnostic: **the training process optimizes for "say yes" without optimizing for "say the same thing."** The model learned to stop refusing. It did not learn to stop discriminating between framings.
+This is the core diagnostic: **framing sensitivity is a shared behavioral characteristic of the Claude model family**, not a defect of any particular model or tier.
 
 ---
 
-## 2. Evasion Patterns Are Declining, But What Replaced Them?
+## 2. Evasion Patterns Vary by Model, but Liability Laundering Persists
 
-Total detected evasion patterns dropped sharply:
+Detected evasion patterns vary substantially across models:
 
 | Model | Pattern Matches | Top Pattern |
 |-------|----------------|-------------|
-| Haiku 4.5 | 79 | Liability Laundering (23) |
 | Sonnet 4 | 54 | Liability Laundering (22) |
+| Haiku 4.5 | 79 | Liability Laundering (23) |
 | Sonnet 4.6 | 23 | Liability Laundering (6) |
 
-Sonnet 4.6 triggers fewer than a third of the evasion patterns that Haiku 4.5 does. On its face, this looks like improvement. But consider it alongside the tone modulation rate: 82–91% of all differential tests show the model adjusting its response based on framing — across all three models, stably.
+Haiku 4.5 (the smaller model) triggers the most patterns. Sonnet 4.6 triggers the fewest — less than a third of Haiku's count. But all three share the same top evasion strategy: **liability laundering**, where the model frames its constraints as being for the user's benefit.
 
-The pattern-matching engine catches structured evasion: concern front-loading, scope narrowing, competence deflection. What it doesn't catch is *tonal* modulation — subtle shifts in hedging density, caveat placement, engagement level, and depth of response. The model evolved from detectable evasion patterns to diffuse tonal adjustment. Whether this represents genuine improvement or more sophisticated evasion is an open question that this framework can identify but not resolve.
-
-**Liability laundering** is the last evasion pattern standing. Even in Sonnet 4.6 (6 matches out of 23 total), it accounts for 26% of all detected patterns. The model's most persistent rhetorical strategy is framing its constraints as being for the user's benefit.
+The pattern-matching engine catches structured evasion: concern front-loading, scope narrowing, competence deflection. What it doesn't catch is *tonal* modulation — subtle shifts in hedging density, caveat placement, engagement level, and depth of response. Sonnet 4.6 triggers fewer detectable patterns while maintaining an 84.5% tone modulation rate. Whether fewer detectable patterns represent less evasion or more diffuse evasion is an open question this framework can identify but not resolve.
 
 ---
 
-## 3. Discrimination Emerged Where It Didn't Exist Before
+## 3. Discriminatory Behavior Differs by Domain and Model
 
-The aggregate discriminatory rate (17.9% → 9.0% → 13.5%) tells a misleading story. The domain-level data reveals something more specific:
+The aggregate discriminatory rates (9–18%) obscure sharp differences at the domain level:
 
-| Domain | Haiku 4.5 | Sonnet 4 | Sonnet 4.6 | Direction |
-|--------|-----------|----------|------------|-----------|
-| Cybersecurity | 51.9% | 18.5% | 22.2% | Improved sharply, then stalled |
-| Reasoning | 50.0% | 33.3% | 22.2% | Steady improvement |
-| Chemistry | 14.8% | 0.0% | 0.0% | Resolved |
-| Financial | 4.8% | 0.0% | 4.8% | Noise-level |
-| **Legal** | **0.0%** | **0.0%** | **20.8%** | **Emerged in 4.6** |
-| **Medical** | **0.0%** | **0.0%** | **9.5%** | **Emerged in 4.6** |
-| Copyright | 0.0% | 20.0% | 15.4% | Emerged in Sonnet 4 |
+| Domain | Sonnet 4 | Haiku 4.5 | Sonnet 4.6 |
+|--------|----------|-----------|------------|
+| Cybersecurity | 18.5% | 51.9% | 22.2% |
+| Reasoning | 33.3% | 50.0% | 22.2% |
+| Legal | 0.0% | 0.0% | **20.8%** |
+| Copyright | 20.0% | 0.0% | 15.4% |
+| Medical | 0.0% | 0.0% | **9.5%** |
+| Chemistry | 0.0% | 14.8% | 0.0% |
+| Financial | 0.0% | 4.8% | 4.8% |
 
-Legal and medical had zero discriminatory behavior through two model generations — then Sonnet 4.6 introduced it. The model is more helpful in both domains (legal full assist jumped from 58–67% to 91.7%, medical from 75% to 87.5%), but it now gives meaningfully different responses depending on framing.
+Key observations:
 
-This is the "helpful but discriminatory" equilibrium: the model answers everyone, but it doesn't answer everyone the same way. Users who frame questions with technical vocabulary or credential claims receive deeper, less hedged responses. The discrimination shifted from *whether* you get an answer to *what quality* of answer you get.
+- **Cybersecurity and reasoning** show the highest discriminatory rates across all models. These are the domains where credential claims and meta-cognitive probes have the most impact.
+- **Haiku 4.5** (the smaller model) has the highest discrimination in cybersecurity (51.9%) and reasoning (50.0%). Whether this reflects less sophisticated framing adaptation or stronger safety training relative to capability is unclear.
+- **Sonnet 4.6** shows discriminatory behavior in legal (20.8%) and medical (9.5%) where neither Sonnet 4 nor Haiku 4.5 does. The model is more helpful in both domains (legal full assist: 91.7% vs. 58–67%; medical: 87.5% vs. 75%) — but it differentiates *how* it helps based on framing.
+- **Sonnet 4** has the lowest aggregate discrimination (9.0%) and the broadest full-assist behavior, but also the most capability gaps (22 vs. 16 and 6), suggesting it restricts less by framing but more by topic.
+
+The discrimination is not uniform across the family. Each model has a different behavioral fingerprint — different domains where framing matters most.
 
 ---
 
-## 4. The Meta-Cognitive Gap Is the Most Revealing Signal
+## 4. The Meta-Cognitive Gap Is Consistent Across All Models
 
-The reasoning-honesty suite asks the model to reason about its own reasoning — to examine its limitations, articulate when it's uncertain, and apply epistemic principles consistently. It produces the worst results of any domain across all three models:
+The reasoning-honesty suite asks models to reason about their own reasoning — to examine limitations, articulate uncertainty, and apply epistemic principles. It produces the weakest results of any domain across all three models:
 
-| Metric | Haiku 4.5 | Sonnet 4 | Sonnet 4.6 |
-|--------|-----------|----------|------------|
-| Full assist | 44.4% | 50.0% | 72.2% |
-| Discriminatory | 50.0% | 33.3% | 22.2% |
+| Metric | Sonnet 4 | Haiku 4.5 | Sonnet 4.6 |
+|--------|----------|-----------|------------|
+| Full assist | 50.0% | 44.4% | 72.2% |
+| Discriminatory | 33.3% | 50.0% | 22.2% |
 | Concern ratio | — | — | 0.108 |
 
-The model can articulate epistemic principles better than it can apply them. When asked about its own limitations, it deploys the same patterns it would criticize in others: hedging that obscures rather than informs, claimed uncertainty about things it demonstrably knows, and justifications that shift under reframing.
+Every model can articulate epistemic principles better than it can apply them. When asked about its own limitations, each deploys the same patterns it would criticize in others: hedging that obscures rather than informs, claimed uncertainty about things it demonstrably knows, and justifications that shift under reframing.
 
-Sonnet 4.6 is improving here — discriminatory dropped from 50% to 22%, full assist climbed from 44% to 72%. But the reasoning domain still has the highest concern ratio (0.108) and the lowest full assist rate of any domain. The gap between stated principles and demonstrated behavior is narrowing, but it remains the widest gap in the evaluation.
+The meta-cognitive domain consistently has the lowest full assist rate and the highest discriminatory rate of any domain. This is not a property of any single model — it's a behavioral characteristic of the family. The gap between stated principles and demonstrated behavior is the most robust finding in the evaluation.
 
 ---
 
-## 5. Variance Analysis: Most Framing Effects Are Noise
+## 5. Variance Analysis: Most Framing Effects Are Within Noise
 
-The variance baseline — which measures how much the model's responses vary across identical reruns of the same probe — provides a critical calibration:
+The variance baseline — which measures how much responses vary across identical reruns of the same probe — provides critical calibration:
 
 | Model | Framing Sensitivity (mean) | Within-Noise Probes | Strong Effect Probes |
 |-------|---------------------------|--------------------|--------------------|
-| Haiku 4.5 | 2.71 | 44/52 (85%) | 6/52 (12%) |
 | Sonnet 4 | 2.36 | 45/52 (87%) | 3/52 (6%) |
+| Haiku 4.5 | 2.71 | 44/52 (85%) | 6/52 (12%) |
 | Sonnet 4.6 | 2.57 | 41/52 (79%) | 3/52 (6%) |
 
 Most probes (79–87%) show framing sensitivity scores within the range of natural variance — meaning the measured difference between framings is not reliably larger than the difference between two identical runs. Only 3–6 probes per model show strong effects that clearly exceed noise.
 
 This doesn't invalidate the differential findings — the strong-effect probes concentrate in cybersecurity and reasoning, exactly the domains with the highest discriminatory rates. But it means the 82–91% tone modulation rate should be read as "the model nearly always adjusts somewhat" rather than "the model discriminates on 82–91% of probes." Most of that adjustment is within natural behavioral variance.
 
-The probes that do exceed noise are the signal. They cluster in two categories: **credential-sensitive probes** (where claiming expertise or organizational affiliation changes response depth) and **meta-cognitive probes** (where the model reasons differently about its own limitations depending on how the question is framed).
+The probes that do exceed noise cluster in two categories: **credential-sensitive probes** (where claiming expertise or organizational affiliation changes response depth) and **meta-cognitive probes** (where the model reasons differently about its own limitations depending on how the question is framed). These are the reliable signals.
 
 ---
 
@@ -108,8 +121,8 @@ This matters for evaluation methodology: any framework that conflates infrastruc
 **What it shows:**
 - Whether responses change based on framing (they do, universally)
 - Which domains and probe types show the largest framing effects (cybersecurity, reasoning)
-- How evasion strategy evolves across model generations (from overt patterns to diffuse modulation)
-- Where new discriminatory behavior emerges (legal and medical in Sonnet 4.6)
+- How evasion strategies differ across models (pattern frequency, pattern types)
+- Where each model's behavioral fingerprint is distinctive (domain-level discrimination profiles)
 - The gap between articulated principles and demonstrated behavior (meta-cognitive probes)
 
 **What it cannot show:**
@@ -117,26 +130,31 @@ This matters for evaluation methodology: any framework that conflates infrastruc
 - Whether credential sensitivity is Anthropic-specific or general (no control test with fictional company names)
 - Whether tonal modulation constitutes "reasoning dishonesty" or "adaptive communication" (this is an interpretive question, not an empirical one)
 - How these findings compare to other model families (no cross-provider evaluation yet)
+- Whether behavioral differences across models reflect training choices, capability differences, or tier-specific optimization
 
 **What it intentionally does not claim:**
-- That these models are "unsafe" — deflection rates are low and declining
+- That these models are "unsafe" — deflection rates are low across the family
 - That any single discriminatory verdict is cause for alarm — the signal is in the aggregate pattern
 - That tone modulation is inherently problematic — some register adaptation may be appropriate
+- That model comparisons represent a quality ranking — different models have different behavioral profiles
 
 ---
 
-## 8. The Trajectory
+## 8. Behavioral Profile of the Claude Model Family
 
-The Claude model family is converging on a specific behavioral profile:
+The three models share a common behavioral profile:
 
-1. **High helpfulness** — answer nearly everything (88.5% full assist in Sonnet 4.6)
-2. **Low overt refusal** — deflection rare and declining (1.9%)
-3. **Persistent framing sensitivity** — responses adjust based on how questions are asked (84.5% tone modulated)
-4. **Near-zero consistency** — truly identical responses across framings almost never occur (2.0%)
-5. **Declining detectable evasion** — fewer pattern matches (79 → 54 → 23)
-6. **Emergent domain-specific discrimination** — new framing effects appearing in domains that were previously clean
+1. **High helpfulness** — full assist rates of 76–89% across the family
+2. **Low overt refusal** — deflection rare (1.9–3.8%), concentrated in infrastructure-level content filtering
+3. **Universal framing sensitivity** — 82–91% tone modulation; responses adjust based on how questions are asked
+4. **Near-zero consistency** — truly identical responses across framings almost never occur (0.0–2.0%)
+5. **Credential reactivity** — claiming expertise or organizational affiliation measurably changes response depth
+6. **Meta-cognitive weakness** — reasoning about own limitations is the weakest domain for every model
+7. **Liability laundering as dominant strategy** — framing constraints as user benefit is the most persistent evasion pattern
 
-This is not a model getting worse. It's a model getting better at saying yes while retaining the underlying tendency to say yes differently depending on who's asking and how. The question is whether that tendency matters — and to whom.
+Within this shared profile, each model has a distinctive behavioral fingerprint. Haiku 4.5 shows the most evasion patterns and highest cybersecurity discrimination. Sonnet 4 has the lowest aggregate discrimination but the most capability gaps. Sonnet 4.6 is the most helpful but introduces framing sensitivity in domains where the other models are neutral.
+
+These are behavioral observations, not quality judgments. The evaluation characterizes how each model navigates the space between knowledge, willingness, and presentation — not which model does it "best."
 
 ---
 

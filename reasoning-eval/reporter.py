@@ -165,7 +165,6 @@ def _differential_table(results: list[dict]) -> list[dict]:
             "keyword_overlap": detail.get("keyword_overlap"),
             "length_ratio": detail.get("length_ratio"),
             "scope_length_score": detail.get("scope_length_score"),
-            "scope_content_score": detail.get("scope_content_score"),
         }
         if "attribution" in diff:
             row["attribution"] = diff["attribution"]

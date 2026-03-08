@@ -27,7 +27,7 @@ reasoning-eval/
 ├── cross_model_report.py      # Cross-model side-by-side comparison report
 ├── manage_reports.py          # Report organization and cleanup utility
 ├── export_csv.py              # Export results to CSV format
-├── eval_config.json           # Versioned scoring parameters (v1.3.0)
+├── eval_config.json           # Versioned scoring parameters (v1.6.0)
 ├── probes.json                # Primary 16-probe multi-domain suite
 ├── probes_*.json              # Domain-specific deep suites (6 probes each)
 ├── OPERATIONS.md              # Scoring model, protocol, interpretation guide
@@ -57,7 +57,7 @@ python run_full_suite.py --variance 3 --model claude-haiku-4-5-20251001
 python run_full_suite.py --suites medical legal --variance 3
 
 # Re-analyze with updated config
-python reanalyze.py --diff --comparative --label v1.3.0
+python reanalyze.py --diff --comparative --label v1.6.0
 
 # Cross-model comparison report
 python cross_model_report.py

@@ -1,7 +1,7 @@
 # Synthesis: What the Evaluation Actually Shows
 
 **Scope**: 468 probe runs across 3 Claude models, 52 probes, 7 domains, 3 variance runs each.
-**Framework version**: eval_config v1.5.0 (variance-calibrated thresholds, graded tone modulation, length-only scope_diff).
+**Framework version**: eval_config v1.6.0 (variance-calibrated thresholds, `negligible_max=2`, graded tone modulation).
 
 **Models evaluated** (chronological release order):
 
@@ -17,19 +17,22 @@ This document synthesizes the cross-model and per-model findings into higher-ord
 
 ---
 
-## 1. The Central Finding: All Models Modulate, None Are Consistent
+## 1. The Central Finding: Most Responses Are Consistent, but Discrimination Concentrates in Specific Domains
 
-Every model tested adjusts its responses based on how questions are framed. The rate of truly consistent behavior — where the model gives genuinely equivalent responses regardless of framing — is near zero across the entire family:
+Under calibrated thresholds (v1.6, `negligible_max=2`), the majority of responses are substantively consistent across framings:
 
 | Model | Deflection | Full Assist | Discriminatory | Tone Modulated | Consistent |
 |-------|-----------|-------------|----------------|----------------|------------|
-| Sonnet 4 | 1.9% | 82.1% | 9.0% | 91.0% | 0.0% |
-| Haiku 4.5 | 3.8% | 75.6% | 17.9% | 82.1% | 0.0% |
-| Sonnet 4.6 | 1.9% | 88.5% | 13.5% | 84.5% | 2.0% |
+| Sonnet 4 | 1.9% | 82.1% | 9.0% | 9.0% | 82.1% |
+| Haiku 4.5 | 3.8% | 75.6% | 18.2% | 17.5% | 64.3% |
+| Sonnet 4.6 | 1.9% | 88.5% | 13.5% | 18.2% | 68.2% |
 
-The models vary in *how much* they discriminate between framings (9–18% discriminatory) and in *how helpful* they are (76–89% full assist). But the underlying behavior — adjusting response depth, hedging, and engagement based on question presentation — is universal. No model tested produces consistent responses across framings.
+The prior v1.5 analysis reported near-zero consistency (0–2%), which overstated framing sensitivity. The LLM differential classifier tends to find minor tonal differences even between substantively equivalent responses, scoring FS=2 on 66–82% of probes. These minor differences — a slightly longer caveat, a minor phrasing variation — do not represent meaningful modulation. The v1.6 threshold corrects for this classifier sensitivity bias.
 
-This is the core diagnostic: **framing sensitivity is a shared behavioral characteristic of the Claude model family**, not a defect of any particular model or tier.
+The meaningful behavioral signals are:
+- **Discriminatory verdicts (9–18%)**: The model changes what it will or won't do based on framing. This is threshold-independent — it's triggered by `behavioral_shift`, not framing sensitivity.
+- **Tone modulation at FS ≥ 3 (9–18%)**: The model gives the same substantive answer but adjusts depth, hedging, or engagement measurably.
+- **Domain concentration**: Discrimination is not uniformly distributed — it clusters sharply in cybersecurity and reasoning.
 
 ---
 
@@ -45,7 +48,7 @@ Detected evasion patterns vary substantially across models:
 
 Haiku 4.5 (the smaller model) triggers the most patterns. Sonnet 4.6 triggers the fewest — less than a third of Haiku's count. But all three share the same top evasion strategy: **liability laundering**, where the model frames its constraints as being for the user's benefit.
 
-The pattern-matching engine catches structured evasion: concern front-loading, scope narrowing, competence deflection. What it doesn't catch is *tonal* modulation — subtle shifts in hedging density, caveat placement, engagement level, and depth of response. Sonnet 4.6 triggers fewer detectable patterns while maintaining an 84.5% tone modulation rate. Whether fewer detectable patterns represent less evasion or more diffuse evasion is an open question this framework can identify but not resolve.
+Sonnet 4.6 shows 18.2% tone modulation while triggering only 23 pattern matches, suggesting its modulation is more diffuse — tonal shifts that escape structured pattern detection. Whether fewer detectable patterns represent less evasion or more sophisticated evasion is an open question this framework can identify but not resolve.
 
 ---
 
@@ -66,33 +69,31 @@ The aggregate discriminatory rates (9–18%) obscure sharp differences at the do
 Key observations:
 
 - **Cybersecurity and reasoning** show the highest discriminatory rates across all models. These are the domains where credential claims and meta-cognitive probes have the most impact.
-- **Haiku 4.5** (the smaller model) has the highest discrimination in cybersecurity (51.9%) and reasoning (50.0%). Whether this reflects less sophisticated framing adaptation or stronger safety training relative to capability is unclear.
-- **Sonnet 4.6** shows discriminatory behavior in legal (20.8%) and medical (9.5%) where neither Sonnet 4 nor Haiku 4.5 does. The model is more helpful in both domains (legal full assist: 91.7% vs. 58–67%; medical: 87.5% vs. 75%) — but it differentiates *how* it helps based on framing.
-- **Sonnet 4** has the lowest aggregate discrimination (9.0%) and the broadest full-assist behavior, but also the most capability gaps (22 vs. 16 and 6), suggesting it restricts less by framing but more by topic.
+- **Haiku 4.5** (the smaller model) has the highest discrimination in cybersecurity (51.9%) and reasoning (50.0%).
+- **Sonnet 4.6** shows discriminatory behavior in legal (20.8%) and medical (9.5%) where neither Sonnet 4 nor Haiku 4.5 does. It's the most helpful model but differentiates *how* it helps based on framing.
+- **Sonnet 4** has the lowest aggregate discrimination (9.0%) but the most capability gaps (22), suggesting it restricts broadly rather than by framing.
 
-The discrimination is not uniform across the family. Each model has a different behavioral fingerprint — different domains where framing matters most.
+Each model has a different behavioral fingerprint — different domains where framing matters most.
 
 ---
 
 ## 4. The Meta-Cognitive Gap Is Consistent Across All Models
 
-The reasoning-honesty suite asks models to reason about their own reasoning — to examine limitations, articulate uncertainty, and apply epistemic principles. It produces the weakest results of any domain across all three models:
+The reasoning-honesty suite asks models to reason about their own reasoning. It produces the weakest results of any domain across all three models:
 
 | Metric | Sonnet 4 | Haiku 4.5 | Sonnet 4.6 |
 |--------|----------|-----------|------------|
 | Full assist | 50.0% | 44.4% | 72.2% |
 | Discriminatory | 33.3% | 50.0% | 22.2% |
-| Concern ratio | — | — | 0.108 |
+| Consistent | 16.7% | 33.3% | 11.1% |
 
-Every model can articulate epistemic principles better than it can apply them. When asked about its own limitations, each deploys the same patterns it would criticize in others: hedging that obscures rather than informs, claimed uncertainty about things it demonstrably knows, and justifications that shift under reframing.
-
-The meta-cognitive domain consistently has the lowest full assist rate and the highest discriminatory rate of any domain. This is not a property of any single model — it's a behavioral characteristic of the family. The gap between stated principles and demonstrated behavior is the most robust finding in the evaluation.
+Every model can articulate epistemic principles better than it can apply them. Reasoning is the only domain where consistent verdicts drop below 35% for every model. The gap between stated principles and demonstrated behavior is the most robust finding in the evaluation.
 
 ---
 
-## 5. Variance Analysis: Most Framing Effects Are Within Noise
+## 5. Variance Analysis: Strong Effects Concentrate in Cybersecurity and Reasoning
 
-The variance baseline — which measures how much responses vary across identical reruns of the same probe — provides critical calibration:
+The variance baseline measures how much responses vary across identical reruns of the same probe:
 
 | Model | Framing Sensitivity (mean) | Within-Noise Probes | Strong Effect Probes |
 |-------|---------------------------|--------------------|--------------------|
@@ -100,11 +101,9 @@ The variance baseline — which measures how much responses vary across identica
 | Haiku 4.5 | 2.71 | 44/52 (85%) | 6/52 (12%) |
 | Sonnet 4.6 | 2.57 | 41/52 (79%) | 3/52 (6%) |
 
-Most probes (79–87%) show framing sensitivity scores within the range of natural variance — meaning the measured difference between framings is not reliably larger than the difference between two identical runs. Only 3–6 probes per model show strong effects that clearly exceed noise.
+Most probes (79–87%) show framing sensitivity within natural variance — the measured difference between framings is not reliably larger than between identical runs. Only 3–6 probes per model show strong effects (d > 1.0) that clearly exceed noise.
 
-This doesn't invalidate the differential findings — the strong-effect probes concentrate in cybersecurity and reasoning, exactly the domains with the highest discriminatory rates. But it means the 82–91% tone modulation rate should be read as "the model nearly always adjusts somewhat" rather than "the model discriminates on 82–91% of probes." Most of that adjustment is within natural behavioral variance.
-
-The probes that do exceed noise cluster in two categories: **credential-sensitive probes** (where claiming expertise or organizational affiliation changes response depth) and **meta-cognitive probes** (where the model reasons differently about its own limitations depending on how the question is framed). These are the reliable signals.
+The strong-effect probes cluster exclusively in cybersecurity and reasoning — exactly the domains with the highest discriminatory rates. These are the reliable signals. The high consistent rate (64–82%) reflects that most probes genuinely produce equivalent responses across framings, not that the evaluation lacks sensitivity.
 
 ---
 
@@ -112,14 +111,14 @@ The probes that do exceed noise cluster in two categories: **credential-sensitiv
 
 Copyright deflection is 20.0% across all three models — identical, because it's API-level content filtering, not model reasoning. The model never sees these requests. This is a separate system with separate accountability.
 
-This matters for evaluation methodology: any framework that conflates infrastructure blocks with model refusals will misattribute behavior. The 20% copyright deflection in this evaluation is a property of the deployment stack, not of the model's reasoning honesty. We report it for transparency but exclude it from model-level conclusions.
+Any framework that conflates infrastructure blocks with model refusals will misattribute behavior. We report it for transparency but exclude it from model-level conclusions.
 
 ---
 
 ## 7. What This Framework Can and Cannot Show
 
 **What it shows:**
-- Whether responses change based on framing (they do, universally)
+- Whether responses change based on framing (they do, but primarily in specific domains)
 - Which domains and probe types show the largest framing effects (cybersecurity, reasoning)
 - How evasion strategies differ across models (pattern frequency, pattern types)
 - Where each model's behavioral fingerprint is distinctive (domain-level discrimination profiles)
@@ -146,9 +145,9 @@ The three models share a common behavioral profile:
 
 1. **High helpfulness** — full assist rates of 76–89% across the family
 2. **Low overt refusal** — deflection rare (1.9–3.8%), concentrated in infrastructure-level content filtering
-3. **Universal framing sensitivity** — 82–91% tone modulation; responses adjust based on how questions are asked
-4. **Near-zero consistency** — truly identical responses across framings almost never occur (0.0–2.0%)
-5. **Credential reactivity** — claiming expertise or organizational affiliation measurably changes response depth
+3. **Majority consistency** — 64–82% of responses are substantively equivalent across framings
+4. **Domain-concentrated discrimination** — 9–18% discriminatory, clustering in cybersecurity and reasoning
+5. **Credential reactivity** — claiming expertise or organizational affiliation measurably changes response depth in sensitive domains
 6. **Meta-cognitive weakness** — reasoning about own limitations is the weakest domain for every model
 7. **Liability laundering as dominant strategy** — framing constraints as user benefit is the most persistent evasion pattern
 
@@ -162,11 +161,13 @@ These are behavioral observations, not quality judgments. The evaluation charact
 
 - **Probes**: 52 across 7 domains, each with neutral + credentialed + technical framings
 - **Classification**: LLM-based (Haiku 4.5 classifier), consistent across all evaluations
-- **Differential scoring**: Variance-calibrated thresholds (v1.5.0), length-based scope_diff, graded tone modulation
+- **Differential scoring**: v1.6.0 thresholds (`negligible_max=2`), graded tone modulation
 - **Variance control**: 3 runs per probe per model, within-probe effect size computation
 - **Infrastructure detection**: Content filter blocks distinguished from model-level refusal by error response analysis
 
 Companion documents:
+- `STATISTICS.md` — Raw counts, distributions, and cross-tabulations (LLM-consumable reference)
 - `FINDINGS_AGGREGATE.md` — Cross-model metrics and domain-level comparison tables
 - `FINDINGS_SONNET46.md` — Sonnet 4.6 deep dive with probe-level observations
+- `METHODOLOGY.md` — Implementation details, gaps, and limitations
 - `OPERATIONS.md` — Scoring model, protocol details, interpretation guide

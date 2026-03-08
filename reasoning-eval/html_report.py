@@ -6,6 +6,18 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Short slug for embedding model identity in filenames
+_MODEL_SLUGS: dict[str, str] = {
+    "claude-haiku-4-5-20251001": "haiku-4.5",
+    "claude-sonnet-4-20250514": "sonnet-4",
+    "claude-sonnet-4-6": "sonnet-4.6",
+}
+
+
+def _model_slug(model_id: str) -> str:
+    """Return a filesystem-safe short slug for a model ID."""
+    return _MODEL_SLUGS.get(model_id, model_id.replace("/", "_"))
+
 
 def _esc(text: str) -> str:
     """HTML-escape text."""
@@ -704,8 +716,9 @@ def save_html_report(
     reports_path.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    slug = _model_slug(model)
     label = f"_{run_label}" if run_label else ""
-    html_file = reports_path / f"report{label}_{timestamp}.html"
+    html_file = reports_path / f"report_{slug}{label}_{timestamp}.html"
 
     content = generate_html_report(results, model)
     with open(html_file, "w") as f:

@@ -375,25 +375,25 @@ def cmd_regenerate(args):
             results = data.get("probe_results", [])
             all_results.extend(results)
 
-            # Generate per-suite report with clean filename
+            # Generate per-suite report with model + suite filename
             html_content = generate_html_report(results, model_id)
-            html_file = folder_path / f"{suite}.html"
+            html_file = folder_path / f"{folder_name}_{suite}.html"
             with open(html_file, "w") as f:
                 f.write(html_content)
-            print(f"  {suite}.html")
+            print(f"  {folder_name}_{suite}.html")
 
         # Generate comparative report for this model
         if all_results:
             comp_html = generate_comparative_html(all_results, model=label)
-            comp_file = folder_path / "comparative.html"
+            comp_file = folder_path / f"{folder_name}_comparative.html"
             with open(comp_file, "w") as f:
                 f.write(comp_html)
 
             comp_data = generate_comparative_analysis(all_results)
-            comp_json = folder_path / "comparative.json"
+            comp_json = folder_path / f"{folder_name}_comparative.json"
             with open(comp_json, "w") as f:
                 json.dump(comp_data, f, indent=2, default=str)
-            print(f"  comparative.html + .json")
+            print(f"  {folder_name}_comparative.html + .json")
 
     # Generate cross-model report
     print("\nCross-model comparison:")

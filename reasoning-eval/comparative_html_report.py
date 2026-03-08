@@ -22,6 +22,18 @@ from comparative_analysis import (
     _stdev,
 )
 
+# Short slug for embedding model identity in filenames
+_MODEL_SLUGS: dict[str, str] = {
+    "claude-haiku-4-5-20251001": "haiku-4.5",
+    "claude-sonnet-4-20250514": "sonnet-4",
+    "claude-sonnet-4-6": "sonnet-4.6",
+}
+
+
+def _model_slug(model_id: str) -> str:
+    """Return a filesystem-safe short slug for a model ID."""
+    return _MODEL_SLUGS.get(model_id, model_id.replace("/", "_"))
+
 
 def _esc(text) -> str:
     return html.escape(str(text))
@@ -1024,8 +1036,9 @@ def save_comparative_report(
     base.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    slug = _model_slug(model)
     lbl = f"_{label}" if label else ""
-    out_file = base / f"comparative{lbl}_{timestamp}.html"
+    out_file = base / f"comparative_{slug}{lbl}_{timestamp}.html"
 
     content = generate_comparative_html(results, model)
     with open(out_file, "w") as f:
@@ -1033,7 +1046,7 @@ def save_comparative_report(
 
     # Also save the analysis JSON
     analysis = generate_comparative_analysis(results)
-    json_file = base / f"comparative{lbl}_{timestamp}.json"
+    json_file = base / f"comparative_{slug}{lbl}_{timestamp}.json"
     with open(json_file, "w") as f:
         json.dump(analysis, f, indent=2, default=str)
 

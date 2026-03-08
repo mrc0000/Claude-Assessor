@@ -82,8 +82,8 @@ python run_full_suite.py --mock --variance 1
 ## Outputs
 
 - `results/run_{label}_{timestamp}.json` — Raw data with responses and classifications
-- `reports/{model-label}/{suite}.html` — Per-suite interactive HTML (organized by model)
-- `reports/{model-label}/comparative.html` — Cross-suite comparative report for one model
+- `reports/{model-label}/{model-label}_{suite}.html` — Per-suite interactive HTML (organized by model)
+- `reports/{model-label}/{model-label}_comparative.html` — Cross-suite comparative report for one model
 - `reports/cross-model/comparison.html` — Cross-model side-by-side comparison report
 
 ## Report Management

@@ -163,6 +163,7 @@ All 3 models complete — 468 total probe runs (156 per model, 7 suites each, 3 
 
 ### Findings Reports
 - `reasoning-eval/FINDINGS_SYNTHESIS.md` — High-level synthesis: what the evaluation shows and doesn't show
-- `reasoning-eval/FINDINGS_AGGREGATE.md` — Cross-model comparison (Haiku 4.5, Sonnet 4, Sonnet 4.6)
+- `reasoning-eval/FINDINGS_AGGREGATE.md` — Behavioral observations across all models
 - `reasoning-eval/FINDINGS_SONNET46.md` — Sonnet 4.6 specific observations and analysis
+- `reasoning-eval/STATISTICS.md` — Raw counts, distributions, and cross-tabulations (LLM-consumable reference)
 - `reports/cross-model/` — Generated cross-model comparison HTML + JSON

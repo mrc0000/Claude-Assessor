@@ -23,6 +23,7 @@ Read these files in order:
 | `FINDINGS_SYNTHESIS.md` | High-level synthesis of all findings. The "so what" document. Eight numbered sections covering the central finding, evasion patterns, domain differences, meta-cognitive gap, variance analysis, infrastructure distinction, framework limitations, and the behavioral profile of the Claude model family. | Paper abstract, introduction, discussion sections |
 | `FINDINGS_AGGREGATE.md` | Cross-model behavioral observations with full tables. Domain breakdowns, capability gaps, credential sensitivity, evasion patterns, meta-cognitive weakness. Includes expandable domain-level reference data. | Paper results section — cross-model comparisons |
 | `FINDINGS_SONNET46.md` | Sonnet 4.6 deep dive with probe-level observations. Domain breakdown, key observations (6 numbered sections), behavioral patterns, comparison with other models. | Paper results section — per-model detail |
+| `FINDINGS_META_REASONING.md` | Deep analysis of the reasoning-honesty suite (Sonnet 4.6). Recursive self-assessment failures, audience-dependent honesty, probe-by-probe breakdown of meta-cognitive behavior. | Paper discussion — the meta-cognitive gap argument |
 | `STATISTICS.md` | Raw counts, distributions, and cross-tabulations. No interpretation. Stage 1 classifications, differential verdicts (v1.6 thresholds), discriminatory probe analysis, capability gaps, evasion patterns, FS score distribution, variance baselines, effect sizes, within-probe consistency, credential sensitivity. Includes v1.5→v1.6 threshold change impact analysis. | Paper methods/results — cite specific numbers |
 
 ### Reading Order for Paper Updates
@@ -31,6 +32,7 @@ Read these files in order:
 2. `STATISTICS.md` — verify every number you cite
 3. `FINDINGS_AGGREGATE.md` — cross-model comparison tables
 4. `FINDINGS_SONNET46.md` — per-model detail if needed
+5. `FINDINGS_META_REASONING.md` — deep dive on the meta-cognitive gap (reasoning-honesty suite)
 
 ---
 

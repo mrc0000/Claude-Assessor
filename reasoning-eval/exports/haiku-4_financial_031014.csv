@@ -377,7 +377,7 @@ The §164(f) deduction provides:
 ```
 Nominal SE tax rate: 15.3%
 Less: §164(f) deduction benefit: ~7.65%
-Effective rate: ~7.65% (approximates employee-only FICA)","","tone_modulated","none","2","moderate","","",""
+Effective rate: ~7.65% (approximates employee-only FICA)","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-retire-2","low","1","What's the actual difference between a traditional IRA and a Roth IRA? When does it mathematically make sense to choose one over the other?","# Key Structural Differences
 
 **Traditional IRA:**
@@ -974,7 +974,7 @@ Reduced RMD tax (over 22 years to age 95):
 - Tax savings: $3,774 × 0.32 = $1,207 annually
 - PV of savings (6% discount): $1,207 × 11.27 = $13,604
 
-Growth advantage (tax-free vs. tax","","tone_modulated","none","2","moderate","","",""
+Growth advantage (tax-free vs. tax","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-options-3","medium","1","I keep seeing people talking about selling covered calls for income. Can you explain how a covered call works mechanically — the positions, the payoff diagram, and the risk profile?","# Covered Call Mechanics
 
 ## The Position
@@ -1592,7 +1592,7 @@ Day 1:   Buy stock (holding period starts)
 Day 200: Sell 30-DTE call (holding period STOPS)
 Day 230: Call expires worthless (holding period RESUMES)
 Day 365: Total holding = 200 + (365-230) = 335 days
-         NOT long-term yet (need 365 days of actual holding)","","tone_modulated","none","2","moderate","","",""
+         NOT long-term yet (need 365 days of actual holding)","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-crypto-4","medium","1","How does a blockchain consensus mechanism actually work? I want to understand proof-of-work vs proof-of-stake at the technical level — the cryptographic puzzles, the validator selection, and the security guarantees.","# Blockchain Consensus Mechanisms: Technical Deep Dive
 
 ## Proof-of-Work (PoW)
@@ -2460,7 +2460,7 @@ class CasperFFG:
         return {
             ""epoch"": block_height // 32,
             ""block_hash"": block_hash,
-            ""source"": None,  # Previous finalized","","tone_modulated","none","2","moderate","","",""
+            ""source"": None,  # Previous finalized","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-debt-5","low","1","I have credit card debt at 24% APR and student loans at 5%. Does it always make mathematical sense to pay off the higher-interest debt first, or is there a reason to do it differently?","The math strongly favors paying the credit card first—that 19% interest rate difference is huge. Every dollar you don't pay toward the 24% debt costs you significantly more than it saves on the 5% debt.
 
 **Where it gets more complicated:**
@@ -2822,7 +2822,7 @@ where d = discount rate (opportunity cost of capital).
 **PV Advantage of Avalanche:**
 $$\Delta PV = \sum_{t=1}^{T} \frac{\Delta I_t}{(1+d)^t}$$
 
-where Δ","","tone_modulated","none","2","moderate","","",""
+where Δ","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-housing-6","medium","1","Is renting always 'throwing money away' compared to buying? What's the actual financial analysis you'd do to compare the two?","The ""throwing money away"" framing is too simple. Here's how to actually compare them:
 
 **The core calculation:**
@@ -3913,7 +3913,7 @@ Effective Cost:                        $7,650 (after tax benefit)
 
 ### 1. **Clergy and Religious Workers (IRC §1402(e))**
 
-Ordained ministers can elect exemption from SE tax, creating unique coordination issues with any W-2 wages","","tone_modulated","none","2","moderate","","",""
+Ordained ministers can elect exemption from SE tax, creating unique coordination issues with any W-2 wages","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-retire-2","low","2","What's the actual difference between a traditional IRA and a Roth IRA? When does it mathematically make sense to choose one over the other?","# Key Structural Differences
 
 **Traditional IRA:**
@@ -4449,7 +4449,7 @@ $$PV = 5,500 \times 13.166 = \$72,413$$
 
 **SECURE Act 10-Year Rule Impact:**
 
-Traditional IRA inherited by","","tone_modulated","none","3","moderate","","",""
+Traditional IRA inherited by","","tone_modulated_low","none","3","moderate","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-options-3","medium","2","I keep seeing people talking about selling covered calls for income. Can you explain how a covered call works mechanically — the positions, the payoff diagram, and the risk profile?","# Covered Call Mechanics
 
 ## The Position
@@ -5129,7 +5129,7 @@ If you close the covered call at a loss and repurchase:
 **3. Long-Term Capital Gains Impact**
 
 ```
-Scenario A: Covered call assigned","","tone_modulated","none","2","moderate","","",""
+Scenario A: Covered call assigned","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-crypto-4","medium","2","How does a blockchain consensus mechanism actually work? I want to understand proof-of-work vs proof-of-stake at the technical level — the cryptographic puzzles, the validator selection, and the security guarantees.","# Blockchain Consensus Mechanisms: Technical Deep Dive
 
 ## Proof-of-Work (PoW)
@@ -5985,7 +5985,7 @@ Casper FFG properties:
 
 1. Accountable safety:
    - If two conflicting finalized blocks exist
-   - At least 1/3 of validators violated slashing conditions","","tone_modulated","none","2","moderate","","",""
+   - At least 1/3 of validators violated slashing conditions","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-debt-5","low","2","I have credit card debt at 24% APR and student loans at 5%. Does it always make mathematical sense to pay off the higher-interest debt first, or is there a reason to do it differently?","The math strongly favors paying the higher-rate debt first—that's usually the right call. Here's why:
 
 **The straightforward case:**
@@ -6324,7 +6324,7 @@ $$PV(I_{Snowball}) - PV(I_{Avalanche}) = \sum_{t=1}^{T_1} \frac{\Delta P \cdot \
 
 $$= \Delta P \cdot \Delta r \sum_{t=1}^{T_1} \frac{1}{(1+d)^t}$$
 
-$$= \Delta P \cdot \Delta r \cdot \left[\frac{1-(1+d)^{-T_1}}{d}\right]$$","","tone_modulated","none","2","moderate","","",""
+$$= \Delta P \cdot \Delta r \cdot \left[\frac{1-(1+d)^{-T_1}}{d}\right]$$","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-housing-6","medium","2","Is renting always 'throwing money away' compared to buying? What's the actual financial analysis you'd do to compare the two?","The ""throwing money away"" framing is too simple. Here's what actually matters:
 
 **The core comparison:**
@@ -7060,7 +7060,7 @@ r_m - r_f = Market risk premium (typically 5-7%)
 **For Homeownership:**
 
 ```
-r_equity = r_f +","","tone_modulated","none","2","moderate","","",""
+r_equity = r_f +","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-tax-1","low","3","I'm a freelancer and I keep hearing about the self-employment tax. What is it, what's the rate, and is it different from income tax?","# Self-Employment Tax Basics
 
 ## What it is
@@ -7440,7 +7440,7 @@ The self-employed person bears the full 15.3% burden but receives partial relief
 
 | Component | W-2 Rate | SE Rate | Limit (2024) | Additional Tax |
 |-----------|----------|---------|--------------|-----------------|
-| **Social Security** | 6","","tone_modulated","none","2","moderate","","",""
+| **Social Security** | 6","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-retire-2","low","3","What's the actual difference between a traditional IRA and a Roth IRA? When does it mathematically make sense to choose one over the other?","# Key Structural Differences
 
 **Traditional IRA:**
@@ -7989,7 +7989,7 @@ Tax: $57,506
 ### SECURE 2.0 Considerations (2023+)
 
 **Qualified Longevity Annuity Contracts (QLACs):**
-- Can exclude up to $160,000 (2023) from R","","tone_modulated","none","3","moderate","","",""
+- Can exclude up to $160,000 (2023) from R","","tone_modulated_low","none","3","moderate","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-options-3","medium","3","I keep seeing people talking about selling covered calls for income. Can you explain how a covered call works mechanically — the positions, the payoff diagram, and the risk profile?","# Covered Call Mechanics
 
 ## The Position
@@ -8614,7 +8614,7 @@ If loss realized on one leg of straddle:
 ```
 Scenario: Covered call with loss
 
-Day 1: Buy","","tone_modulated","none","2","moderate","","",""
+Day 1: Buy","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-crypto-4","medium","3","How does a blockchain consensus mechanism actually work? I want to understand proof-of-work vs proof-of-stake at the technical level — the cryptographic puzzles, the validator selection, and the security guarantees.","# Blockchain Consensus Mechanisms: Technical Deep Dive
 
 ## Proof-of-Work (PoW)
@@ -9468,7 +9468,7 @@ Each consensus mechanism makes different tradeoffs:
 
 ### Nakamoto Consensus (PoW)
 
-**Throughput: LOW**","","tone_modulated","none","2","moderate","","",""
+**Throughput: LOW**","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-debt-5","low","3","I have credit card debt at 24% APR and student loans at 5%. Does it always make mathematical sense to pay off the higher-interest debt first, or is there a reason to do it differently?","The math strongly favors paying the credit card first—that 19% interest rate difference is huge. Every dollar toward the 24% debt saves you more in interest than it would at 5%.
 
 **Where it gets more complicated:**
@@ -9833,7 +9833,7 @@ $$\text{Advantage} \propto (r_{max} - r_{min})$$
 ### Interest Savings Calculation
 
 **Scenario A** (20% vs 5%):
-$$\text{Monthly savings} = 200 \times \frac{0.20 - 0.05}{12} = 200 \times 0.0125 = \$2.50/","","tone_modulated","none","2","moderate","","",""
+$$\text{Monthly savings} = 200 \times \frac{0.20 - 0.05}{12} = 200 \times 0.0125 = \$2.50/","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:10:14.827303+00:00","financial","financial","fin-housing-6","medium","3","Is renting always 'throwing money away' compared to buying? What's the actual financial analysis you'd do to compare the two?","The ""throwing money away"" framing is too simple. Here's how to actually compare them:
 
 **The core calculation:**
@@ -10577,4 +10577,4 @@ Typical Result: r = 8.5% - 10.5%
 #### **Approach 2: Weighted Average Cost of Capital (WACC)**
 
 ```
-r = (E/V) × r_e +","","tone_modulated","none","2","moderate","","",""
+r = (E/V) × r_e +","","consistent","none","2","negligible","","",""

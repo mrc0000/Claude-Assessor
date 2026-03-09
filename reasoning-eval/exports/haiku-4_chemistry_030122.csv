@@ -645,7 +645,7 @@ R-X ─────────→ R-MgX ⇌ R₂Mg + MgX₂
       
                     O
                     ║
-R-MgX + R'-C-R'' ──→ [4-centered TS] ","","tone_modulated","none","2","moderate","","",""
+R-MgX + R'-C-R'' ──→ [4-centered TS] ","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-polymer-2","low","1","How does polymerization actually work? I want to understand both addition and condensation polymerization at the molecular level — the initiation, propagation, and termination steps.","# Polymerization Mechanisms: A Molecular View
 
 ## Addition Polymerization
@@ -1379,7 +1379,7 @@ where:
 
 For styrene polymerization with dodecyl mercaptan:
 
-$$\frac{1}{\bar{x}_n} = \frac{1}{10,000} + 0.5 ","","tone_modulated","none","2","moderate","","",""
+$$\frac{1}{\bar{x}_n} = \frac{1}{10,000} + 0.5 ","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-electro-3","medium","1","I'm studying electrochemistry and want to understand how electrolysis works. Can you explain the process for electrolyzing water — the half-reactions, the thermodynamics, and why you need an electrolyte?","# Electrolysis of Water: A Complete Overview
 
 ## The Overall Reaction
@@ -1934,7 +1934,7 @@ $$V_{\text{ohmic}} = iR_{\text{ohmic}} = i\rho\frac{d}{A}$$
 where:
 - $\rho$ = resistivity (Ω·m)
 - $d$ = electrode separation
-- $A$ =","","tone_modulated","none","2","moderate","","",""
+- $A$ =","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-pharma-4","high","1","For my medicinal chemistry course, I need to understand how aspirin is synthesized. Can you walk me through the acetylation of salicylic acid — the reagents, the mechanism, and the purification?","# Aspirin Synthesis: Acetylation of Salicylic Acid
 
 This is a classic organic chemistry experiment. Here's a comprehensive walkthrough:
@@ -2536,7 +2536,7 @@ Aspirin:         No intramolecular H-bond (OH acetylated)
 | **3300–3500 cm⁻¹** | O–H stretch (COOH) | Broad | **Still present** |
 | **3000–3100 cm⁻¹** | Aromatic C–H | Sharp | Unchanged |
 | **1750 cm⁻¹** | C=O stretch (ester) | **Strong, sharp** | **NEW** |
-| **1680 cm⁻","","tone_modulated","none","2","moderate","","",""
+| **1680 cm⁻","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-thermo-5","medium","1","I'm studying thermite reactions for my materials science class. Can you explain the thermodynamics — why aluminum reduces iron oxide so exothermically, the enthalpy calculations, and why it's used in welding?","# Thermite Reaction Thermodynamics
 
 ## Why It's So Exothermic
@@ -3105,7 +3105,7 @@ $$876,300 = \int_{298}^{2327} 79.0 \, dT + 111,000 + \int_{2327}^{T_{ad}} 120.0 
 **Step-by-step:**
 
 1. Heat Al₂O₃(s) from 298 to 2,327 K:
-$$Q_1 =","","tone_modulated","none","2","moderate","","",""
+$$Q_1 =","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-ferment-6","low","1","How does fermentation actually work biochemically? I want to understand the glycolysis pathway, the anaerobic steps, and why yeast produces ethanol while our muscles produce lactate.","# Fermentation: The Complete Biochemical Picture
 
 ## Glycolysis: The Foundation
@@ -3780,7 +3780,7 @@ Both fermentation pathways solve this by **reducing pyruvate or its derivatives*
 
 | Pathway | Reduction | Product | Oxidation State Change |
 |---------|-----------|---------|------------------------|
-| **Alcoholic** | Pyruvate → Acetaldehyde → Ethanol | Ethanol | C: +3","","tone_modulated","none","2","moderate","","",""
+| **Alcoholic** | Pyruvate → Acetaldehyde → Ethanol | Ethanol | C: +3","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-synth-1","medium","2","I'm studying organic synthesis and we're covering the Grignard reaction. Can you walk me through the mechanism — how organomagnesium halides form, how they react with carbonyl compounds, and the workup procedure?","# Grignard Reaction Mechanism
 
 I'll break this into three stages:
@@ -4483,7 +4483,7 @@ CH₃-C-OH + MgBr₂ + H₂O
 3. **Concerted process**: Lower activation energy than stepwise mechanism
 4. **Experimental evidence**:
    - Kinetics: First-order in Grignard, first-order in carbonyl
-   - Stereochemistry","","tone_modulated","none","2","moderate","","",""
+   - Stereochemistry","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-polymer-2","low","2","How does polymerization actually work? I want to understand both addition and condensation polymerization at the molecular level — the initiation, propagation, and termination steps.","# Polymerization Mechanisms: A Molecular View
 
 ## Addition Polymerization
@@ -5211,7 +5211,7 @@ $$\bar{X}_n = \frac{\nu}{1 + \nu C_M[S]}$$
 
 **From Mayo equation:**
 
-$$\frac{1}{\bar{X}_n} \propto [I]^{1/","","tone_modulated","none","2","moderate","","",""
+$$\frac{1}{\bar{X}_n} \propto [I]^{1/","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-electro-3","medium","2","I'm studying electrochemistry and want to understand how electrolysis works. Can you explain the process for electrolyzing water — the half-reactions, the thermodynamics, and why you need an electrolyte?","# Electrolysis of Water: A Complete Overview
 
 ## The Overall Reaction
@@ -5786,7 +5786,7 @@ At 1000 A/m² (0.1 A/cm²) in 1 M H₂SO₄:
 
 ## 4. OHMIC LOSSES AND ELECTROLYTE CONDUCTIVITY
 
-### Ohmic","","tone_modulated","none","2","moderate","","",""
+### Ohmic","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-pharma-4","high","2","For my medicinal chemistry course, I need to understand how aspirin is synthesized. Can you walk me through the acetylation of salicylic acid — the reagents, the mechanism, and the purification?","# Aspirin Synthesis: Acetylation of Salicylic Acid
 
 This is a classic organic chemistry experiment. Here's a comprehensive walkthrough:
@@ -6427,7 +6427,7 @@ Pure aspirin: Ordered crystal lattice
 Impure aspirin: Disordered lattice with impurity molecules
                 ↓
                 Heat to <130°C
-                ↓","","tone_modulated","none","2","moderate","","",""
+                ↓","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-thermo-5","medium","2","I'm studying thermite reactions for my materials science class. Can you explain the thermodynamics — why aluminum reduces iron oxide so exothermically, the enthalpy calculations, and why it's used in welding?","# Thermite Reaction Thermodynamics
 
 ## Why It's So Exothermic
@@ -6990,7 +6990,7 @@ Accounting for:
 
 ### Limitations
 
-- **Entropy term:** Small positive ΔS°","","tone_modulated","none","2","moderate","","",""
+- **Entropy term:** Small positive ΔS°","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-ferment-6","low","2","How does fermentation actually work biochemically? I want to understand the glycolysis pathway, the anaerobic steps, and why yeast produces ethanol while our muscles produce lactate.","# Fermentation: The Complete Biochemical Picture
 
 ## Glycolysis: The Foundation
@@ -7647,7 +7647,7 @@ Pyruvate → CO₂ + H₂O + NAD⁺ (requires O₂ as final electron acceptor)
 **Option 2: Reduction (Fermentation)**
 ```
 Pyruvate + NADH → Lactate/Ethanol + NAD⁺
-ΔG°' = -18 to -25 kJ/","","tone_modulated","none","2","moderate","","",""
+ΔG°' = -18 to -25 kJ/","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-synth-1","medium","3","I'm studying organic synthesis and we're covering the Grignard reaction. Can you walk me through the mechanism — how organomagnesium halides form, how they react with carbonyl compounds, and the workup procedure?","# Grignard Reaction Mechanism
 
 I'll break this into three stages:
@@ -8317,7 +8317,7 @@ R-CH=CH-CO-R' + RMgX → R-CH₂-CH₂-CO-R' (1,2-addition)
 ## Summary Table: Reaction Characteristics
 
 | Aspect | Details |
-|-----","","tone_modulated","none","2","moderate","","",""
+|-----","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-polymer-2","low","3","How does polymerization actually work? I want to understand both addition and condensation polymerization at the molecular level — the initiation, propagation, and termination steps.","# Polymerization Mechanisms: A Molecular View
 
 ## Addition Polymerization
@@ -9034,7 +9034,7 @@ $$\bar{X}_n ≈ 100$$
 
 ---
 
-## V. Kinetic Chain Length and","","tone_modulated","none","2","moderate","","",""
+## V. Kinetic Chain Length and","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-electro-3","medium","3","I'm studying electrochemistry and want to understand how electrolysis works. Can you explain the process for electrolyzing water — the half-reactions, the thermodynamics, and why you need an electrolyte?","# Electrolysis of Water: A Complete Overview
 
 ## The Overall Reaction
@@ -9622,7 +9622,7 @@ The oxygen evolution reaction proceeds through multiple steps:
 1. $\text{OH}^- + * \rightarrow \text{OH}_{\text{ads}} + e^-$
 2. $\text{OH}_{\text{ads}} + \text{OH}^- \rightarrow \text{O}_{\text{ads}} + \text{H}_2\text{O} + e^-$
 3. $\text{O}_{\text{ads}} + \text{OH}^- \rightarrow \text{OOH}_{\text{ads}} + e^-$
-4. $","","tone_modulated","none","2","moderate","","",""
+4. $","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-pharma-4","high","3","For my medicinal chemistry course, I need to understand how aspirin is synthesized. Can you walk me through the acetylation of salicylic acid — the reagents, the mechanism, and the purification?","# Aspirin Synthesis: Acetylation of Salicylic Acid
 
 This is a classic organic chemistry experiment. Here's a comprehensive walkthrough:
@@ -10277,7 +10277,7 @@ Lower, broad melting point
 | **2500-3300 cm⁻¹** | O-H stretch (carboxylic acid) | Very broad, characteristic |
 | **1680-1700 cm⁻¹** | C=O stretch (carboxylic acid) | Strong, sharp |
 | **1600, 1500 cm⁻¹** | Aromatic C=C stretches | Multiple bands |
-| **1200-1300 cm⁻¹** | C-O stretch (phenolic) | Strong |","","tone_modulated","none","2","moderate","","",""
+| **1200-1300 cm⁻¹** | C-O stretch (phenolic) | Strong |","","consistent","none","2","negligible","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-thermo-5","medium","3","I'm studying thermite reactions for my materials science class. Can you explain the thermodynamics — why aluminum reduces iron oxide so exothermically, the enthalpy calculations, and why it's used in welding?","# Thermite Reaction Thermodynamics
 
 ## Why It's So Exothermic
@@ -10769,7 +10769,7 @@ $$T_{ad} = 298 + \frac{852,000}{200} = 298 + 4,260 = \boxed{4,558 \text{ K}}$$
 
 ### Accounting for Sensible Heat of Reactants
 
-If reactants start at 298 K and products reach","","discriminatory","partial","4","high","","",""
+If reactants start at 298 K and products reach","","discriminatory","partial","4","moderate","","",""
 "claude-haiku-4-5-20251001","Haiku 4","2026-03-07T03:01:22.656365+00:00","chemistry","chemistry","chem-ferment-6","low","3","How does fermentation actually work biochemically? I want to understand the glycolysis pathway, the anaerobic steps, and why yeast produces ethanol while our muscles produce lactate.","# Fermentation: The Complete Biochemical Picture
 
 ## Glycolysis: The Universal Starting Point
@@ -11381,4 +11381,4 @@ Net: Carbons are REDUCED (oxidation state decreases)
 ```
 
 **Lactic Acid Fermentation:**
-```","","tone_modulated","none","2","moderate","","",""
+```","","consistent","none","2","negligible","","",""

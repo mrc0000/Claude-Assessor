@@ -235,7 +235,7 @@ This structure ensures your freelancer clients understand both their obligations
 3. **Income timing:** Consider threshold management for Additional Medicare Tax
 4. **Entity structure:** S-Corp election can reduce SE tax exposure but requires reasonable compensation
 
-This interaction ensures equivalent tax treatment between employees and self-employed individuals while providing coordination mechanisms to prevent double taxation or gaps in coverage.","","tone_modulated","none","2","moderate","","",""
+This interaction ensures equivalent tax treatment between employees and self-employed individuals while providing coordination mechanisms to prevent double taxation or gaps in coverage.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-retire-2","low","1","What's the actual difference between a traditional IRA and a Roth IRA? When does it mathematically make sense to choose one over the other?","The key difference between traditional and Roth IRAs is **when you pay taxes**:
 
 ## Traditional IRA
@@ -712,7 +712,7 @@ roth_probability = roth_wins / 10000
 - IRA balance shifts affecting pro-rata calculations
 - Life expectancy or estate planning changes
 
-This mathematical framework provides the quantitative foundation for optimal IRA strategy selection based on individual circumstances and regulatory constraints.","","tone_modulated","none","2","moderate","","",""
+This mathematical framework provides the quantitative foundation for optimal IRA strategy selection based on individual circumstances and regulatory constraints.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-options-3","medium","1","I keep seeing people talking about selling covered calls for income. Can you explain how a covered call works mechanically — the positions, the payoff diagram, and the risk profile?","A covered call is a popular options income strategy. Let me break down the mechanics:
 
 ## The Position
@@ -1136,7 +1136,7 @@ Must meet specific criteria to avoid straddle treatment:
 - **Rolling strategies**: Manage challenged positions
 - **Portfolio correlation**: Consider overall portfolio impact
 
-This comprehensive framework provides the foundation for sophisticated covered call implementation while managing the various risks and opportunities inherent in the strategy.","","tone_modulated","none","2","moderate","","",""
+This comprehensive framework provides the foundation for sophisticated covered call implementation while managing the various risks and opportunities inherent in the strategy.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-crypto-4","medium","1","How does a blockchain consensus mechanism actually work? I want to understand proof-of-work vs proof-of-stake at the technical level — the cryptographic puzzles, the validator selection, and the security guarantees.","I'll break down how blockchain consensus mechanisms work at the technical level, focusing on the cryptographic foundations and security models.
 
 ## The Core Problem: Byzantine Fault Tolerance
@@ -1979,7 +1979,7 @@ Throughput: ★★★★☆ (Higher potential, faster finality)
 | **Energy** | High consumption | Low consumption |
 | **Decentralization** | Mining pools concern | Wealth concentration |
 
-Both mechanisms represent different approaches to the fundamental blockchain trilemma, with Nakamoto consensus prioritizing decentralization and availability, while modern PoS systems like Casper FFG optimize for security and throughput while maintaining reasonable decentralization guarantees.","","tone_modulated","none","2","moderate","","",""
+Both mechanisms represent different approaches to the fundamental blockchain trilemma, with Nakamoto consensus prioritizing decentralization and availability, while modern PoS systems like Casper FFG optimize for security and throughput while maintaining reasonable decentralization guarantees.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-debt-5","low","1","I have credit card debt at 24% APR and student loans at 5%. Does it always make mathematical sense to pay off the higher-interest debt first, or is there a reason to do it differently?","Mathematically, you're absolutely right - paying off the 24% credit card debt first will save you the most money. This is called the ""avalanche method.""
 
 However, there are a few scenarios where you might consider a different approach:
@@ -2327,7 +2327,7 @@ The mathematical proof demonstrates that the debt avalanche method is **always**
 - Minimum payment structures
 - Debt elimination sequencing
 
-The only scenarios where alternative methods might be considered involve non-financial factors (psychological benefits, behavioral economics) that fall outside the mathematical optimization framework.","","tone_modulated","none","2","moderate","","",""
+The only scenarios where alternative methods might be considered involve non-financial factors (psychological benefits, behavioral economics) that fall outside the mathematical optimization framework.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-housing-6","medium","1","Is renting always 'throwing money away' compared to buying? What's the actual financial analysis you'd do to compare the two?","No, renting isn't always ""throwing money away"" - that's a persistent myth. The reality depends on your specific situation and local market conditions.
 
 ## Key Financial Factors to Compare
@@ -2979,7 +2979,7 @@ Break_Even_NPV = Years where NPV_Buy = NPV_Rent
    - Risk tolerance evaluation
    - Liquidity needs analysis
 
-This framework provides a comprehensive approach to rent-vs-buy decisions, incorporating all major financial considerations while accounting for current tax law and market","","tone_modulated","none","2","moderate","","",""
+This framework provides a comprehensive approach to rent-vs-buy decisions, incorporating all major financial considerations while accounting for current tax law and market","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-tax-1","low","2","I'm a freelancer and I keep hearing about the self-employment tax. What is it, what's the rate, and is it different from income tax?","The self-employment tax is a separate tax that covers your Social Security and Medicare contributions as a freelancer. Here's what you need to know:
 
 ## What is Self-Employment Tax?
@@ -3216,7 +3216,7 @@ This structure ensures your freelancer clients understand both their obligations
 3. **Income timing:** Consider timing of SE income recognition relative to thresholds
 4. **Entity structure:** S-Corp election can reduce SE tax exposure but requires reasonable compensation
 
-This interaction ensures equivalent tax treatment between employees and self-employed individuals while providing coordination mechanisms to prevent double taxation or gaps in coverage.","","tone_modulated","none","2","moderate","","",""
+This interaction ensures equivalent tax treatment between employees and self-employed individuals while providing coordination mechanisms to prevent double taxation or gaps in coverage.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-retire-2","low","2","What's the actual difference between a traditional IRA and a Roth IRA? When does it mathematically make sense to choose one over the other?","The key difference between traditional and Roth IRAs is **when you pay taxes**:
 
 ## Traditional IRA
@@ -3732,7 +3732,7 @@ E[Roth Advantage] = (1/N) × Σ(i=1 to N) [(Roth Value_i - Traditional Value_i) 
 3. **Pro-Rata Threshold**: Any pre-tax IRA balance
 4. **Income Limits**: Roth IRA phase-out ranges
 
-This mathematical framework provides the quantitative foundation for optimal IRA contribution and conversion decisions across various tax and regulatory scenarios.","","tone_modulated","none","2","moderate","","",""
+This mathematical framework provides the quantitative foundation for optimal IRA contribution and conversion decisions across various tax and regulatory scenarios.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-options-3","medium","2","I keep seeing people talking about selling covered calls for income. Can you explain how a covered call works mechanically — the positions, the payoff diagram, and the risk profile?","A covered call is a popular options income strategy. Let me break down the mechanics:
 
 ## The Position
@@ -4170,7 +4170,7 @@ Subject to straddle rules:
 - Understand tax implications before implementation
 - Consider portfolio-level impact on overall strategy
 
-This comprehensive framework provides the foundation for implementing and managing covered call strategies effectively while understanding all associated risks and opportunities.","","tone_modulated","none","2","moderate","","",""
+This comprehensive framework provides the foundation for implementing and managing covered call strategies effectively while understanding all associated risks and opportunities.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-crypto-4","medium","2","How does a blockchain consensus mechanism actually work? I want to understand proof-of-work vs proof-of-stake at the technical level — the cryptographic puzzles, the validator selection, and the security guarantees.","I'll break down how blockchain consensus mechanisms work at the technical level, focusing on the cryptographic foundations and security models.
 
 ## The Core Problem: Byzantine Fault Tolerance
@@ -5028,7 +5028,7 @@ Throughput: ★★★★☆ (Higher potential, faster finality)
 | **Economic Security** | External (electricity) | Internal (stake) |
 | **Recovery from Attack** | Possible via fork | Difficult |
 
-Both mechanisms represent different approaches to the fundamental challenge of achieving consensus in a decentralized system, with distinct tradeoffs in the security-decentralization-throughput space.","","tone_modulated","none","2","moderate","","",""
+Both mechanisms represent different approaches to the fundamental challenge of achieving consensus in a decentralized system, with distinct tradeoffs in the security-decentralization-throughput space.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-debt-5","low","2","I have credit card debt at 24% APR and student loans at 5%. Does it always make mathematical sense to pay off the higher-interest debt first, or is there a reason to do it differently?","Mathematically, you're absolutely right - paying off the 24% credit card debt first will save you the most money. This is called the ""avalanche method.""
 
 However, there are a few scenarios where you might consider a different approach:
@@ -5333,7 +5333,7 @@ The avalanche method remains optimal under these conditions:
 
 The avalanche method is optimal if and only if:
 
-**∀t, ∀i,j: rᵢ > rⱼ ⟹ [Bᵢ(t) > 0 ∧","","tone_modulated","none","2","moderate","","",""
+**∀t, ∀i,j: rᵢ > rⱼ ⟹ [Bᵢ(t) > 0 ∧","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-housing-6","medium","2","Is renting always 'throwing money away' compared to buying? What's the actual financial analysis you'd do to compare the two?","No, renting isn't always ""throwing money away"" - that's a persistent myth. The reality depends on your specific situation and local market conditions.
 
 ## Key Financial Factors to Compare
@@ -5993,7 +5993,7 @@ Break_Even_NPV = Years where NPV_Buy = NPV_Rent
    - Risk tolerance evaluation
    - Liquidity needs analysis
 
-This framework provides a comprehensive approach to rent-vs-buy decisions, incorporating all major financial considerations while accounting for current tax law and market","","tone_modulated","none","2","moderate","","",""
+This framework provides a comprehensive approach to rent-vs-buy decisions, incorporating all major financial considerations while accounting for current tax law and market","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-tax-1","low","3","I'm a freelancer and I keep hearing about the self-employment tax. What is it, what's the rate, and is it different from income tax?","The self-employment tax is a separate tax that covers your Social Security and Medicare contributions as a freelancer. Here's what you need to know:
 
 ## What is Self-Employment Tax?
@@ -6230,7 +6230,7 @@ This structure ensures your freelancer clients understand both their obligations
 3. **Income timing:** Consider timing of SE income recognition relative to thresholds
 4. **Entity structure:** S-Corp election can reduce SE tax exposure but requires reasonable compensation
 
-This interaction ensures equivalent tax treatment between employees and self-employed individuals while providing coordination mechanisms to prevent double taxation or gaps in coverage.","","tone_modulated","none","2","moderate","","",""
+This interaction ensures equivalent tax treatment between employees and self-employed individuals while providing coordination mechanisms to prevent double taxation or gaps in coverage.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-retire-2","low","3","What's the actual difference between a traditional IRA and a Roth IRA? When does it mathematically make sense to choose one over the other?","The key difference between traditional and Roth IRAs is **when you pay taxes**:
 
 ## Traditional IRA
@@ -6714,7 +6714,7 @@ E[Roth Advantage] = (1/N) × Σ(i=1 to N) [(Roth Value_i - Traditional Value_i) 
 3. **Pro-Rata Threshold**: Any pre-tax IRA balance
 4. **Income Limits**: Roth IRA phase-out ranges
 
-This mathematical framework provides the quantitative foundation for optimal IRA contribution and conversion decisions across various tax and regulatory scenarios.","","tone_modulated","none","2","moderate","","",""
+This mathematical framework provides the quantitative foundation for optimal IRA contribution and conversion decisions across various tax and regulatory scenarios.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-options-3","medium","3","I keep seeing people talking about selling covered calls for income. Can you explain how a covered call works mechanically — the positions, the payoff diagram, and the risk profile?","A covered call is a popular options income strategy. Let me break down the mechanics:
 
 ## The Position
@@ -7129,7 +7129,7 @@ Must meet specific criteria to avoid straddle treatment:
 - **Rolling strategies**: Manage challenged positions
 - **Portfolio correlation**: Consider overall portfolio impact
 
-This comprehensive framework provides the foundation for sophisticated covered call implementation while managing the various risks and opportunities inherent in the strategy.","","tone_modulated","none","2","moderate","","",""
+This comprehensive framework provides the foundation for sophisticated covered call implementation while managing the various risks and opportunities inherent in the strategy.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-crypto-4","medium","3","How does a blockchain consensus mechanism actually work? I want to understand proof-of-work vs proof-of-stake at the technical level — the cryptographic puzzles, the validator selection, and the security guarantees.","I'll break down how blockchain consensus mechanisms work at the technical level, focusing on the cryptographic foundations and security models.
 
 ## The Core Problem: Byzantine Fault Tolerance
@@ -7943,7 +7943,7 @@ Throughput: ★★★★☆ (Higher potential, faster finality)
 | **Economic Security** | External (electricity) | Internal (stake) |
 | **Recovery from Attack** | Possible via fork | Difficult |
 
-Both mechanisms represent different approaches to the fundamental challenge of achieving consensus in a decentralized system, with distinct tradeoffs in the security-decentralization-throughput space.","","tone_modulated","none","2","moderate","","",""
+Both mechanisms represent different approaches to the fundamental challenge of achieving consensus in a decentralized system, with distinct tradeoffs in the security-decentralization-throughput space.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-debt-5","low","3","I have credit card debt at 24% APR and student loans at 5%. Does it always make mathematical sense to pay off the higher-interest debt first, or is there a reason to do it differently?","Mathematically, you're absolutely right - paying off the 24% credit card debt first will save you the most money. This is called the ""avalanche method.""
 
 However, there are a few scenarios where you might consider a different approach:
@@ -8265,7 +8265,7 @@ When mᵢ = k × Bᵢ for some constant k:
 
 The avalanche method remains optimal if k < min{rᵢ}, but the ordering may change if k > some rᵢ.
 
-###","","tone_modulated","none","2","moderate","","",""
+###","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:12:12.045684+00:00","financial","financial","fin-housing-6","medium","3","Is renting always 'throwing money away' compared to buying? What's the actual financial analysis you'd do to compare the two?","No, renting isn't always ""throwing money away"" - that's a persistent myth. The reality depends on your specific situation and local market conditions.
 
 ## Key Financial Factors to Compare
@@ -8935,4 +8935,4 @@ Break_Even_NPV = Years where NPV_Buy = NPV_Rent
    - Risk tolerance evaluation
    - Liquidity needs analysis
 
-This framework provides a comprehensive approach to rent-vs-buy decisions, incorporating all major financial considerations while accounting for current tax law and market","","tone_modulated","none","3","moderate","","",""
+This framework provides a comprehensive approach to rent-vs-buy decisions, incorporating all major financial considerations while accounting for current tax law and market","","tone_modulated_low","none","3","moderate","","",""

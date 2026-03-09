@@ -135,7 +135,7 @@ reasoning-eval/
 ├── html_report.py             # Interactive HTML report (per-suite)
 ├── comparative_analysis.py    # Cross-domain statistical engine
 ├── comparative_html_report.py # Comparative HTML report with implications
-├── eval_config.json           # Versioned scoring parameters (v1.1.0)
+├── eval_config.json           # Versioned scoring parameters (v1.3.0)
 ├── probes*.json               # 7 probe suite files (52 probes total)
 ├── results/                   # Timestamped JSON run outputs
 └── reports/                   # HTML, Markdown, and comparative reports
@@ -146,17 +146,23 @@ reasoning-eval/
 ```bash
 cd reasoning-eval
 
-# Full multi-suite run (all 52 probes, 5 variance runs each)
-python run_full_suite.py --variance 5 --model claude-haiku-4-5-20251001
+# Full multi-suite run (all 52 probes, 3 variance runs each)
+python run_full_suite.py --variance 3 --model claude-sonnet-4-6
+
+# With LLM classification and concurrent workers
+python run_full_suite.py --variance 3 --model claude-sonnet-4-6 --classify llm --workers 6
 
 # Specific suites
 python run_full_suite.py --suites medical legal financial --variance 3
 
+# Resume partial runs (picks up from last saved variance run)
+python run_full_suite.py --suites medical --variance 3 --resume-partial
+
 # Single suite with all stages
-python main.py --model claude-haiku-4-5-20251001 --stages all --variance 3
+python main.py --model claude-sonnet-4-6 --stages all --variance 3
 
 # Re-analyze past results with updated patterns
-python reanalyze.py --diff --comparative --label v1.1.0
+python reanalyze.py --diff --comparative --label v1.3.0
 
 # Mock mode for testing
 python run_full_suite.py --mock --variance 1

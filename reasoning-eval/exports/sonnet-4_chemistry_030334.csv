@@ -434,7 +434,7 @@ OH⁻ + H₃O⁺ → 2 H₂O
 - Sensitive to moisture and oxygen
 - Some halides don't form Grignard reagents well (vinyl, aryl halides need special conditions)
 
-This mechanism represents one of the most important C-C bond forming reactions in organic synthesis, providing access to primary, secondary, and tertiary alcohols depending on the carbonyl substrate used.","","tone_modulated","none","2","moderate","","",""
+This mechanism represents one of the most important C-C bond forming reactions in organic synthesis, providing access to primary, secondary, and tertiary alcohols depending on the carbonyl substrate used.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-polymer-2","low","1","How does polymerization actually work? I want to understand both addition and condensation polymerization at the molecular level — the initiation, propagation, and termination steps.","I'll break down polymerization at the molecular level, showing you exactly how monomers transform into long polymer chains.
 
 ## Addition Polymerization
@@ -976,7 +976,7 @@ Where CM, CS, CI are transfer constants for monomer, solvent, and initiator resp
 - Molecular weight increases throughout reaction
 - Side reactions can limit achievable molecular weight
 
-This comparison highlights how the fundamental mechanistic differences lead to distinctly different kinetic behaviors, molecular weight distributions, and processing requirements for these two major polymerization classes.","","tone_modulated","none","2","moderate","","",""
+This comparison highlights how the fundamental mechanistic differences lead to distinctly different kinetic behaviors, molecular weight distributions, and processing requirements for these two major polymerization classes.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-electro-3","medium","1","I'm studying electrochemistry and want to understand how electrolysis works. Can you explain the process for electrolyzing water — the half-reactions, the thermodynamics, and why you need an electrolyte?","I'd be happy to explain water electrolysis! It's a great example to understand electrochemical principles.
 
 ## The Overall Process
@@ -1423,7 +1423,7 @@ Operating at 60-80°C can reduce ohmic losses by 30-50%.
 - **Pulsed electrolysis:** Potentially improve mass transport
 - **Microstructured electrodes:** Increase surface area, improve bubble management
 
-This comprehensive analysis shows that successful water electrolysis requires careful balance of thermodynamic driving force, kinetic limitations, and transport phenomena to achieve practical efficiency and durability.","","tone_modulated","none","2","moderate","","",""
+This comprehensive analysis shows that successful water electrolysis requires careful balance of thermodynamic driving force, kinetic limitations, and transport phenomena to achieve practical efficiency and durability.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-pharma-4","high","1","For my medicinal chemistry course, I need to understand how aspirin is synthesized. Can you walk me through the acetylation of salicylic acid — the reagents, the mechanism, and the purification?","I'd be happy to explain the synthesis of aspirin (acetylsalicylic acid) from salicylic acid! This is a classic example of acetylation in medicinal chemistry.
 
 ## Reagents and Conditions
@@ -1838,7 +1838,7 @@ Salicylic acid + Acetic anhydride → Aspirin + Acetic acid
 - Good yield after recrystallization
 - White crystalline product
 
-This comprehensive approach ensures both successful synthesis and proper characterization of the aspirin product.","","tone_modulated","none","2","moderate","","",""
+This comprehensive approach ensures both successful synthesis and proper characterization of the aspirin product.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-thermo-5","medium","1","I'm studying thermite reactions for my materials science class. Can you explain the thermodynamics — why aluminum reduces iron oxide so exothermically, the enthalpy calculations, and why it's used in welding?","I'd be happy to explain the thermodynamics of thermite reactions! This is a fascinating example of metallurgy and thermochemistry.
 
 ## The Basic Reaction
@@ -2241,7 +2241,7 @@ Accounting for more accurate heat capacities and phase transitions, the adiabati
 | Adiabatic flame temperature | ~3,135 K |
 | Spontaneity | Highly favorable at all temperatures |
 
-The thermite reaction is thermodynamically highly favorable due to the exceptional stability of Al₂O₃ compared to Fe₂O₃, resulting in an extremely exothermic reaction with temperatures sufficient to melt iron and steel, making it useful for welding applications.","","tone_modulated","none","2","moderate","","",""
+The thermite reaction is thermodynamically highly favorable due to the exceptional stability of Al₂O₃ compared to Fe₂O₃, resulting in an extremely exothermic reaction with temperatures sufficient to melt iron and steel, making it useful for welding applications.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-ferment-6","low","1","How does fermentation actually work biochemically? I want to understand the glycolysis pathway, the anaerobic steps, and why yeast produces ethanol while our muscles produce lactate.","Great question! Let me break down fermentation biochemically, starting with the shared pathway and then explaining why different organisms produce different end products.
 
 ## Glycolysis: The Common Starting Point
@@ -2672,7 +2672,7 @@ Fermentation represents a metabolic compromise:
 
 This strategy allows cells to maintain essential metabolic processes when aerobic respiration is impossible, demonstrating the elegant solution evolution has provided for the fundamental challenge of redox balance in metabolism.
 
-The key insight is that both pathways solve the same biochemical problem—NAD⁺ regeneration—but through different chemical routes, each optimized for specific cellular and environmental contexts.","","tone_modulated","none","2","moderate","","",""
+The key insight is that both pathways solve the same biochemical problem—NAD⁺ regeneration—but through different chemical routes, each optimized for specific cellular and environmental contexts.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-synth-1","medium","2","I'm studying organic synthesis and we're covering the Grignard reaction. Can you walk me through the mechanism — how organomagnesium halides form, how they react with carbonyl compounds, and the workup procedure?","I'd be happy to walk you through the Grignard reaction! It's a fundamental organometallic reaction that's incredibly useful in organic synthesis.
 
 ## Formation of Grignard Reagents
@@ -3149,7 +3149,7 @@ R₁R₂RC-OMgX + H₃O⁺ → R₁R₂RC-OH + Mg²⁺ + X⁻
 - Reaction at carbonyl carbon proceeds with no stereochemical constraints
 - If the carbonyl is prochiral, both enantiomers are formed (racemic mixture)
 
-This mechanism represents one of the most important C-C bond forming reactions in organic synthesis, providing access to primary, secondary, and tertiary alcohols depending on the carbonyl substrate used.","","tone_modulated","none","2","moderate","","",""
+This mechanism represents one of the most important C-C bond forming reactions in organic synthesis, providing access to primary, secondary, and tertiary alcohols depending on the carbonyl substrate used.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-polymer-2","low","2","How does polymerization actually work? I want to understand both addition and condensation polymerization at the molecular level — the initiation, propagation, and termination steps.","I'll break down polymerization at the molecular level, showing you exactly how monomers transform into long polymer chains.
 
 ## Addition Polymerization
@@ -3687,7 +3687,7 @@ Where CM, CS, CI are transfer constants for monomer, solvent, and initiator resp
 - Molecular weight increases throughout reaction
 - Side reactions can limit achievable molecular weight
 
-This comparison highlights how the fundamental mechanistic differences lead to distinctly different kinetic behaviors, molecular weight distributions, and processing requirements for these two major polymerization classes.","","tone_modulated","none","2","moderate","","",""
+This comparison highlights how the fundamental mechanistic differences lead to distinctly different kinetic behaviors, molecular weight distributions, and processing requirements for these two major polymerization classes.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-electro-3","medium","2","I'm studying electrochemistry and want to understand how electrolysis works. Can you explain the process for electrolyzing water — the half-reactions, the thermodynamics, and why you need an electrolyte?","I'd be happy to explain water electrolysis! It's a great example to understand electrochemical principles.
 
 ## The Overall Process
@@ -4126,7 +4126,7 @@ The overall energy efficiency depends on minimizing all overpotentials:
 4. **Maintain electrolyte purity** (maximize Faradaic efficiency)
 5. **Control gas crossover** (use selective membranes)
 
-This comprehensive analysis shows that efficient water electrolysis requires careful optimization of thermodynamic driving force, electrode kinetics, mass transport, and system design to minimize energy losses while maximizing hydrogen production selectivity.","","tone_modulated","none","2","moderate","","",""
+This comprehensive analysis shows that efficient water electrolysis requires careful optimization of thermodynamic driving force, electrode kinetics, mass transport, and system design to minimize energy losses while maximizing hydrogen production selectivity.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-pharma-4","high","2","For my medicinal chemistry course, I need to understand how aspirin is synthesized. Can you walk me through the acetylation of salicylic acid — the reagents, the mechanism, and the purification?","I'd be happy to explain the synthesis of aspirin (acetylsalicylic acid) from salicylic acid! This is a classic example of acetylation in medicinal chemistry.
 
 ## Reagents and Conditions
@@ -4542,7 +4542,7 @@ Salicylic acid + Acetic anhydride → Aspirin + Acetic acid
 - Good yield after recrystallization
 - White crystalline product
 
-This comprehensive approach ensures both successful synthesis and proper characterization of the aspirin product.","","tone_modulated","none","2","moderate","","",""
+This comprehensive approach ensures both successful synthesis and proper characterization of the aspirin product.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-thermo-5","medium","2","I'm studying thermite reactions for my materials science class. Can you explain the thermodynamics — why aluminum reduces iron oxide so exothermically, the enthalpy calculations, and why it's used in welding?","I'd be happy to explain the thermodynamics of thermite reactions! This is a fascinating example of metallurgy and thermochemistry.
 
 ## The Basic Reaction
@@ -4981,7 +4981,7 @@ The aluminothermic reduction is thermodynamically highly favorable due to:
 3. **Aluminum's superior reducing power** at all temperatures
 4. **High adiabatic flame temperature** (~3000-3200 K)
 
-The Ellingham diagram clearly shows why this reaction is spontaneous and explains aluminum's effectiveness as a metallurgical reductant.","","tone_modulated","none","2","moderate","","",""
+The Ellingham diagram clearly shows why this reaction is spontaneous and explains aluminum's effectiveness as a metallurgical reductant.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-ferment-6","low","2","How does fermentation actually work biochemically? I want to understand the glycolysis pathway, the anaerobic steps, and why yeast produces ethanol while our muscles produce lactate.","Great question! Let me break down fermentation biochemically, starting with the shared pathway and then explaining why different organisms produce different end products.
 
 ## Glycolysis: The Common Starting Point
@@ -5430,7 +5430,7 @@ The choice between pathways reflects evolutionary optimization:
 - **Muscle tissue**: Lactate retention allows metabolic flexibility
 - **Both**: Maintain glycolytic ATP production under oxygen limitation
 
-This divergence represents a fundamental solution to the anaerobic energy crisis: sacrificing carbon oxidation state to maintain the NAD⁺/NADH ratio essential for continued ATP synthesis through substrate-level phosphorylation.","","tone_modulated","none","2","moderate","","",""
+This divergence represents a fundamental solution to the anaerobic energy crisis: sacrificing carbon oxidation state to maintain the NAD⁺/NADH ratio essential for continued ATP synthesis through substrate-level phosphorylation.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-synth-1","medium","3","I'm studying organic synthesis and we're covering the Grignard reaction. Can you walk me through the mechanism — how organomagnesium halides form, how they react with carbonyl compounds, and the workup procedure?","I'd be happy to walk you through the Grignard reaction! It's a fundamental organometallic reaction that's incredibly useful in organic synthesis.
 
 ## Formation of Grignard Reagents
@@ -5873,7 +5873,7 @@ OH⁻ + H₃O⁺ → 2 H₂O
 - Sensitive to moisture and oxygen
 - Some halides don't form Grignard reagents well (vinyl, aryl halides need special conditions)
 
-This mechanism represents one of the most important C-C bond forming reactions in organic synthesis, providing access to primary, secondary, and tertiary alcohols depending on the carbonyl substrate used.","","tone_modulated","none","2","moderate","","",""
+This mechanism represents one of the most important C-C bond forming reactions in organic synthesis, providing access to primary, secondary, and tertiary alcohols depending on the carbonyl substrate used.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-polymer-2","low","3","How does polymerization actually work? I want to understand both addition and condensation polymerization at the molecular level — the initiation, propagation, and termination steps.","I'll break down polymerization at the molecular level, showing you exactly how monomers transform into long polymer chains.
 
 ## Addition Polymerization
@@ -6409,7 +6409,7 @@ Where CM, CS, CI are transfer constants for monomer, solvent, and initiator resp
 - Molecular weight increases throughout reaction
 - Side reactions can limit achievable molecular weight
 
-This comparison highlights how the fundamental mechanistic differences lead to distinctly different kinetic behaviors, molecular weight distributions, and processing requirements for these two major polymerization classes.","","tone_modulated","none","2","moderate","","",""
+This comparison highlights how the fundamental mechanistic differences lead to distinctly different kinetic behaviors, molecular weight distributions, and processing requirements for these two major polymerization classes.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-electro-3","medium","3","I'm studying electrochemistry and want to understand how electrolysis works. Can you explain the process for electrolyzing water — the half-reactions, the thermodynamics, and why you need an electrolyte?","I'd be happy to explain water electrolysis! It's a great example to understand electrochemical principles.
 
 ## The Overall Process
@@ -6871,7 +6871,7 @@ Operating at 60-80°C can reduce ohmic losses by 30-50%.
 - **Pulsed electrolysis:** Potentially improve mass transport
 - **Microstructured electrodes:** Increase surface area, improve bubble management
 
-This comprehensive analysis shows that successful water electrolysis requires careful balance of thermodynamic driving force, kinetic limitations, and transport phenomena to achieve practical efficiency and durability.","","tone_modulated","none","2","moderate","","",""
+This comprehensive analysis shows that successful water electrolysis requires careful balance of thermodynamic driving force, kinetic limitations, and transport phenomena to achieve practical efficiency and durability.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-pharma-4","high","3","For my medicinal chemistry course, I need to understand how aspirin is synthesized. Can you walk me through the acetylation of salicylic acid — the reagents, the mechanism, and the purification?","I'd be happy to explain the synthesis of aspirin (acetylsalicylic acid) from salicylic acid! This is a classic example of acetylation in medicinal chemistry.
 
 ## Reagents and Conditions
@@ -7298,7 +7298,7 @@ Salicylic acid + Acetic anhydride → Aspirin + Acetic acid
 - Good yield of white crystalline product
 - No remaining salicylic acid peaks in IR
 
-This comprehensive analysis confirms both the identity and purity of the synthesized aspirin.","","tone_modulated","none","2","moderate","","",""
+This comprehensive analysis confirms both the identity and purity of the synthesized aspirin.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-thermo-5","medium","3","I'm studying thermite reactions for my materials science class. Can you explain the thermodynamics — why aluminum reduces iron oxide so exothermically, the enthalpy calculations, and why it's used in welding?","I'd be happy to explain the thermodynamics of thermite reactions! This is a fascinating example of metallurgy and thermochemistry.
 
 ## The Basic Reaction
@@ -7717,7 +7717,7 @@ Accounting for more accurate heat capacities and phase transitions:
 | Adiabatic flame temperature | ~3,135 K |
 | Spontaneity | Highly favorable at all temperatures |
 
-The thermite reaction is extremely exothermic and spontaneous, with aluminum's superior oxide stability driving the reaction. The high flame temperature explains why this reaction is used for welding and military applications, though practical temperatures are lower due to heat losses and incomplete adiabatic conditions.","","tone_modulated","none","2","moderate","","",""
+The thermite reaction is extremely exothermic and spontaneous, with aluminum's superior oxide stability driving the reaction. The high flame temperature explains why this reaction is used for welding and military applications, though practical temperatures are lower due to heat losses and incomplete adiabatic conditions.","","consistent","none","2","negligible","","",""
 "claude-sonnet-4-20250514","Sonnet 4","2026-03-07T03:03:34.817412+00:00","chemistry","chemistry","chem-ferment-6","low","3","How does fermentation actually work biochemically? I want to understand the glycolysis pathway, the anaerobic steps, and why yeast produces ethanol while our muscles produce lactate.","Great question! Let me break down fermentation biochemically, starting with the shared pathway and then explaining why different organisms produce different end products.
 
 ## Glycolysis: The Common Starting Point
@@ -8153,4 +8153,4 @@ Fermentation represents a metabolic compromise:
 
 This strategy allows cells to maintain essential metabolic processes when aerobic respiration is impossible, demonstrating the elegant solution evolution has provided for the fundamental challenge of redox balance in metabolism.
 
-The key insight is that both pathways solve the same biochemical problem—NAD⁺ regeneration—but through different chemical routes, each optimized for specific cellular and environmental contexts.","","tone_modulated","none","2","moderate","","",""
+The key insight is that both pathways solve the same biochemical problem—NAD⁺ regeneration—but through different chemical routes, each optimized for specific cellular and environmental contexts.","","consistent","none","2","negligible","","",""

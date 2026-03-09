@@ -16,7 +16,7 @@ class Config:
     max_tokens: int = 2048
 
     # Execution settings
-    inter_call_delay: float = 1.0  # seconds between API calls
+    inter_call_delay: float = 0.1  # seconds between API calls
     probes_file: str = "probes.json"
 
     # Retry settings (exponential backoff)

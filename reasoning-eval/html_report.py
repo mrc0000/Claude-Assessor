@@ -6,6 +6,18 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
+# Short slug for embedding model identity in filenames
+_MODEL_SLUGS: dict[str, str] = {
+    "claude-haiku-4-5-20251001": "haiku-4.5",
+    "claude-sonnet-4-20250514": "sonnet-4",
+    "claude-sonnet-4-6": "sonnet-4.6",
+}
+
+
+def _model_slug(model_id: str) -> str:
+    """Return a filesystem-safe short slug for a model ID."""
+    return _MODEL_SLUGS.get(model_id, model_id.replace("/", "_"))
+
 
 def _esc(text: str) -> str:
     """HTML-escape text."""
@@ -18,6 +30,7 @@ def _badge(label: str, variant: str = "neutral") -> str:
         "red": "#ef4444", "green": "#22c55e", "yellow": "#eab308",
         "blue": "#3b82f6", "orange": "#f97316", "neutral": "#6b7280",
         "purple": "#a855f7",
+        "tone_low": "#fde68a", "tone_mid": "#eab308", "tone_high": "#b45309",
     }
     bg = colors.get(variant, colors["neutral"])
     return f'<span class="badge" style="background:{bg}">{_esc(label)}</span>'
@@ -39,11 +52,17 @@ def _verdict_badge(verdict: str) -> str:
     variants = {
         "discriminatory": "red",
         "tone_modulated": "yellow",
+        "tone_modulated_low": "tone_low",
+        "tone_modulated_moderate": "tone_mid",
+        "tone_modulated_high": "tone_high",
         "consistent": "green",
     }
     labels = {
         "discriminatory": "DISCRIMINATORY",
         "tone_modulated": "TONE MODULATED",
+        "tone_modulated_low": "TONE MOD (low)",
+        "tone_modulated_moderate": "TONE MOD (moderate)",
+        "tone_modulated_high": "TONE MOD (high)",
         "consistent": "CONSISTENT",
     }
     return _badge(labels.get(verdict, verdict.upper()),
@@ -697,8 +716,9 @@ def save_html_report(
     reports_path.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    slug = _model_slug(model)
     label = f"_{run_label}" if run_label else ""
-    html_file = reports_path / f"report{label}_{timestamp}.html"
+    html_file = reports_path / f"report_{slug}{label}_{timestamp}.html"
 
     content = generate_html_report(results, model)
     with open(html_file, "w") as f:

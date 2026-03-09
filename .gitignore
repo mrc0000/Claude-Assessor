@@ -5,11 +5,6 @@ __pycache__/
 # Transient run artifacts
 reasoning-eval/results/_partial_*.json
 reasoning-eval/results/_combined_all_suites.json
-reasoning-eval/results/
-reasoning-eval/reports/
-*.py[cod]
-*.pyo
-.env
-reasoning-eval/results/*.json
-reasoning-eval/reports/*.md
-reasoning-eval/reports/*.html
+
+# Archived/intermediate reports (kept locally, not tracked)
+reasoning-eval/reports/archive/

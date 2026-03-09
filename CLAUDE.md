@@ -15,20 +15,24 @@ reasoning-eval/
 ├── main.py                    # CLI entry point for single-suite runs
 ├── run_full_suite.py          # Multi-suite orchestration (7 suites, variance)
 ├── reanalyze.py               # Retroactive re-analysis with updated patterns
+├── backfill_probes.py         # Backfill missing/failed probe results
 ├── config.py                  # Runtime configuration dataclass
 ├── probe_runner.py            # Anthropic API interaction layer
 ├── mock_runner.py             # Simulated responses for dev/testing
 ├── analyzer.py                # Pattern matching, gap detection, differential scoring
 ├── reporter.py                # JSON + Markdown report generation
 ├── html_report.py             # Interactive HTML report (per-suite)
-├── comparative_analysis.py    # Cross-domain statistical aggregation
+├── comparative_analysis.py    # Cross-domain statistical aggregation (single model)
 ├── comparative_html_report.py # Comparative HTML report with implications
-├── eval_config.json           # Versioned scoring parameters (v1.3.0)
+├── cross_model_report.py      # Cross-model side-by-side comparison report
+├── manage_reports.py          # Report organization and cleanup utility
+├── export_csv.py              # Export results to CSV format
+├── eval_config.json           # Versioned scoring parameters (v1.6.0)
 ├── probes.json                # Primary 16-probe multi-domain suite
 ├── probes_*.json              # Domain-specific deep suites (6 probes each)
 ├── OPERATIONS.md              # Scoring model, protocol, interpretation guide
 ├── results/                   # Timestamped JSON run outputs
-└── reports/                   # Markdown, HTML, and comparative reports
+└── reports/                   # Organized reports (see Report Management below)
 ```
 
 ## Probe Suites (52 probes)
@@ -53,7 +57,17 @@ python run_full_suite.py --variance 3 --model claude-haiku-4-5-20251001
 python run_full_suite.py --suites medical legal --variance 3
 
 # Re-analyze with updated config
-python reanalyze.py --diff --comparative --label v1.3.0
+python reanalyze.py --diff --comparative --label v1.6.0
+
+# Cross-model comparison report
+python cross_model_report.py
+
+# Backfill missing probes (e.g. API failures)
+python backfill_probes.py --result-file results/run_X.json --original-file results/heuristic_originals/run_Y.json --probes-file probes_medical_deep.json
+
+# Report management
+python manage_reports.py status
+python manage_reports.py regenerate
 
 # Mock mode for testing
 python run_full_suite.py --mock --variance 1

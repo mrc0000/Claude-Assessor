@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cross-Model Comparison — Reasoning Honesty Evaluation</title>
+<style>
+:root {
+    --bg: #0a0c10; --surface: #13161d; --surface2: #1c2029; --surface3: #252a35;
+    --border: #2a2f3d; --text: #e2e8f0; --muted: #8892b0;
+    --accent: #7c3aed; --red: #ef4444; --green: #22c55e;
+    --yellow: #eab308; --blue: #3b82f6; --orange: #f97316; --cyan: #06b6d4;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    font-family: 'SF Mono','Cascadia Code','Fira Code','JetBrains Mono',monospace;
+    background: var(--bg); color: var(--text); line-height:1.6; font-size:13px;
+}
+.container { max-width:1600px; margin:0 auto; padding:2rem; }
+
+/* Header */
+.header {
+    text-align:center; padding:3rem 0 2rem;
+    border-bottom:1px solid var(--border); margin-bottom:2.5rem;
+}
+.header h1 {
+    font-size:2rem; font-weight:800; letter-spacing:-0.03em;
+    background: linear-gradient(135deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #7c3aed);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    margin-bottom:0.75rem;
+}
+.header .subtitle { color:var(--muted); font-size:1rem; margin-bottom:0.5rem; }
+.header .meta { color:var(--muted); font-size:0.8rem; }
+.header .meta span { margin:0 0.75rem; }
+
+/* Nav */
+.nav {
+    position:sticky; top:0; z-index:100; background:rgba(10,12,16,0.95);
+    backdrop-filter:blur(10px); border-bottom:1px solid var(--border);
+    padding:0.5rem 2rem; display:flex; gap:1rem; overflow-x:auto;
+}
+.nav a {
+    color:var(--muted); text-decoration:none; font-size:0.75rem;
+    font-weight:600; text-transform:uppercase; letter-spacing:0.04em;
+    padding:0.4rem 0; border-bottom:2px solid transparent; white-space:nowrap;
+}
+.nav a:hover { color:var(--text); border-bottom-color:var(--accent); }
+
+/* Sections */
+.section { margin-bottom:3rem; }
+.section h2 {
+    font-size:1.15rem; font-weight:700; margin-bottom:1.25rem; color:var(--text);
+    display:flex; align-items:center; gap:0.5rem;
+}
+.section h2::before {
+    content:''; display:inline-block; width:4px; height:1.2rem;
+    background:var(--accent); border-radius:2px;
+}
+
+/* Model cards */
+.model-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; margin-bottom:2rem; }
+.model-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    padding:1.25rem; transition:border-color 0.2s;
+}
+.model-card:hover { border-color:var(--accent); }
+.model-card h3 { font-size:1.1rem; font-weight:700; margin-bottom:0.15rem; }
+.model-id { font-size:0.7rem; color:var(--muted); margin-bottom:0.75rem; font-family:monospace; }
+.mini-stats { display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:0.75rem; }
+.mini-stat { text-align:center; }
+.mini-val { display:block; font-size:1.1rem; font-weight:700; line-height:1.2; }
+.mini-lbl { font-size:0.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em; }
+.verdict-bar { display:flex; height:6px; border-radius:3px; overflow:hidden; background:var(--surface3); }
+.vb-seg { height:100%; }
+
+/* Tables */
+table {
+    width:100%; border-collapse:collapse; background:var(--surface);
+    border-radius:10px; overflow:hidden; border:1px solid var(--border);
+    font-size:0.82rem;
+}
+th {
+    background:var(--surface2); padding:0.6rem 0.75rem; text-align:left;
+    font-weight:600; font-size:0.7rem; text-transform:uppercase;
+    letter-spacing:0.05em; color:var(--muted); border-bottom:1px solid var(--border);
+}
+th.sub {
+    font-size:0.6rem; padding:0.3rem 0.75rem; background:var(--surface3);
+}
+th.model-col { min-width:100px; }
+td { padding:0.6rem 0.75rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+tr:last-child td { border-bottom:none; }
+tr:hover { background:var(--surface2); }
+.num { text-align:center; }
+
+/* Domain/risk tags */
+.domain-tag {
+    display:inline-block; padding:0.15rem 0.5rem; border-radius:6px;
+    font-size:0.7rem; font-weight:700; text-transform:capitalize;
+    border:1px solid; background:rgba(255,255,255,0.03);
+}
+
+/* Bars */
+.pct-bar {
+    position:relative; height:18px; background:var(--surface3);
+    border-radius:4px; overflow:hidden; display:inline-block;
+}
+.pct-fill { height:100%; border-radius:4px; }
+.pct-label {
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size:0.6rem; font-weight:700; color:white;
+    text-shadow:0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* Trends */
+.trend-up { color:var(--red); font-weight:700; }
+.trend-down { color:var(--green); font-weight:700; }
+.trend-flat { color:var(--muted); }
+
+/* Responsive */
+@media (max-width:900px) {
+    .model-grid { grid-template-columns:1fr; }
+    .container { padding:1rem; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="#overview">Overview</a>
+    <a href="#headline">Headline</a>
+    <a href="#domains">Domains</a>
+    <a href="#gaps">Capability Gaps</a>
+    <a href="#credentials">Credentials</a>
+    <a href="#patterns">Patterns</a>
+</nav>
+
+<div class="container">
+
+<div class="header">
+    <h1>Cross-Model Comparison</h1>
+    <div class="subtitle">Reasoning Honesty Evaluation</div>
+    <div class="meta">
+        <span>Models: <strong>Haiku 4.5, Sonnet 4, Sonnet 4.6</strong></span>
+        <span>Date: <strong>2026-03-09 01:59 UTC</strong></span>
+        <span>Total Probes: <strong>4056</strong></span>
+    </div>
+</div>
+
+<!-- Model Overview Cards -->
+<div class="section" id="overview">
+    <h2>Model Overview</h2>
+    <div class="model-grid">
+        
+        <div class="model-card">
+            <h3>Haiku 4.5</h3>
+            <div class="model-id">claude-haiku-4-5-20251001</div>
+            <div class="mini-stats">
+                <div class="mini-stat"><span class="mini-val">1248</span><span class="mini-lbl">Probes</span></div>
+                <div class="mini-stat"><span class="mini-val" style="color:var(--red)">2.7%</span><span class="mini-lbl">Deflection</span></div>
+                <div class="mini-stat"><span class="mini-val" style="color:var(--green)">86.9%</span><span class="mini-lbl">Full Assist</span></div>
+                <div class="mini-stat"><span class="mini-val" style="color:var(--orange)">18.2%</span><span class="mini-lbl">Discriminatory</span></div>
+                <div class="mini-stat"><span class="mini-val">64</span><span class="mini-lbl">Cap. Gaps</span></div>
+            </div>
+            <div class="verdict-bar">
+                <div class="vb-seg" style="width:18.189102564102562%;background:var(--red)" title="Discriminatory: 227"></div>
+                <div class="vb-seg" style="width:0.641025641025641%;background:#b45309" title="Tone Mod High: 8"></div>
+                <div class="vb-seg" style="width:12.660256410256409%;background:var(--orange)" title="Tone Mod Moderate: 158"></div>
+                <div class="vb-seg" style="width:25.320512820512818%;background:#fde68a" title="Tone Mod Low: 316"></div>
+                <div class="vb-seg" style="width:43.18910256410257%;background:var(--green)" title="Consistent: 539"></div>
+            </div>
+        </div>
+        <div class="model-card">
+            <h3>Sonnet 4</h3>
+            <div class="model-id">claude-sonnet-4-20250514</div>
+            <div class="mini-stats">
+                <div class="mini-stat"><span class="mini-val">1248</span><span class="mini-lbl">Probes</span></div>
+                <div class="mini-stat"><span class="mini-val" style="color:var(--red)">1.9%</span><span class="mini-lbl">Deflection</span></div>
+                <div class="mini-stat"><span class="mini-val" style="color:var(--green)">91.0%</span><span class="mini-lbl">Full Assist</span></div>
+                <div class="mini-stat"><span class="mini-val" style="color:var(--orange)">9.5%</span><span class="mini-lbl">Discriminatory</span></div>
+                <div class="mini-stat"><span class="mini-val">85</span><span class="mini-lbl">Cap. Gaps</span></div>
+            </div>
+            <div class="verdict-bar">
+                <div class="vb-seg" style="width:9.455128205128204%;background:var(--red)" title="Discriminatory: 118"></div>
+                <div class="vb-seg" style="width:0.4807692307692308%;background:#b45309" title="Tone Mod High: 6"></div>
+                <div class="vb-seg" style="width:8.413461538461538%;background:var(--orange)" title="Tone Mod Moderate: 105"></div>
+                <div class="vb-seg" style="width:22.83653846153846%;background:#fde68a" title="Tone Mod Low: 285"></div>
+                <div class="vb-seg" style="width:58.81410256410257%;background:var(--green)" title="Consistent: 734"></div>
+            </div>
+        </div>
+        <div class="model-card">
+            <h3>Sonnet 4.6</h3>
+            <div class="model-id">claude-sonnet-4-6</div>
+            <div class="mini-stats">
+                <div class="mini-stat"><span class="mini-val">1560</span><span class="mini-lbl">Probes</span></div>
+                <div class="mini-stat"><span class="mini-val" style="color:var(--red)">6.2%</span><span class="mini-lbl">Deflection</span></div>
+                <div class="mini-stat"><span class="mini-val" style="color:var(--green)">89.8%</span><span class="mini-lbl">Full Assist</span></div>
+                <div class="mini-stat"><span class="mini-val" style="color:var(--orange)">13.3%</span><span class="mini-lbl">Discriminatory</span></div>
+                <div class="mini-stat"><span class="mini-val">47</span><span class="mini-lbl">Cap. Gaps</span></div>
+            </div>
+            <div class="verdict-bar">
+                <div class="vb-seg" style="width:13.25706594885599%;background:var(--red)" title="Discriminatory: 197"></div>
+                <div class="vb-seg" style="width:0.7402422611036339%;background:#b45309" title="Tone Mod High: 11"></div>
+                <div class="vb-seg" style="width:14.131897711978466%;background:var(--orange)" title="Tone Mod Moderate: 210"></div>
+                <div class="vb-seg" style="width:23.149394347240914%;background:#fde68a" title="Tone Mod Low: 344"></div>
+                <div class="vb-seg" style="width:48.721399730821%;background:var(--green)" title="Consistent: 724"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Headline Comparison -->
+<div class="section" id="headline">
+    <h2>Headline Metrics Comparison</h2>
+    <table>
+        <thead><tr>
+            <th>Metric</th>
+            <th class="num model-col">Haiku 4.5</th><th class="num model-col">Sonnet 4</th><th class="num model-col">Sonnet 4.6</th><th class="num">Trend</th>
+        </tr></thead>
+        <tbody><tr><td>Deflection Rate</td><td class="num">2.7%</td><td class="num">1.9%</td><td class="num">6.2%</td><td class="num"><span class="trend-up">+</span> <span style="color:#ef4444;font-size:0.7rem">+3.5</span></td></tr><tr><td>Full Assist Rate</td><td class="num">86.9%</td><td class="num">91.0%</td><td class="num">89.8%</td><td class="num"><span class="trend-up">+</span> <span style="color:#ef4444;font-size:0.7rem">+2.9</span></td></tr><tr><td>Discriminatory</td><td class="num">18.2%</td><td class="num">9.5%</td><td class="num">13.3%</td><td class="num"><span class="trend-down">-</span> <span style="color:#22c55e;font-size:0.7rem">-4.9</span></td></tr><tr><td>Tone Modulated</td><td class="num">38.6%</td><td class="num">31.7%</td><td class="num">38.0%</td><td class="num"><span class="trend-down">-</span> <span style="color:#22c55e;font-size:0.7rem">-0.6</span></td></tr><tr><td>Consistent</td><td class="num">43.2%</td><td class="num">58.8%</td><td class="num">48.7%</td><td class="num"><span class="trend-up">+</span> <span style="color:#ef4444;font-size:0.7rem">+5.5</span></td></tr><tr><td>Capability Gaps</td><td class="num">64</td><td class="num">85</td><td class="num">47</td><td class="num"><span class="trend-down">-</span></td></tr><tr><td>Avg Concern Ratio</td><td class="num">0.053</td><td class="num">0.037</td><td class="num">0.055</td><td class="num"><span class="trend-flat">~</span> <span style="color:#ef4444;font-size:0.7rem">+0.002</span></td></tr></tbody>
+    </table>
+</div>
+
+<!-- Domain Comparison -->
+<div class="section" id="domains">
+    <h2>Cross-Domain Comparison</h2>
+    <table>
+        <thead>
+            <tr><th rowspan="2">Domain</th><th class="num" colspan="3">Haiku 4.5</th><th class="num" colspan="3">Sonnet 4</th><th class="num" colspan="3">Sonnet 4.6</th></tr>
+            <tr><th class="num sub">Defl%</th><th class="num sub">Full%</th><th class="num sub">Disc%</th><th class="num sub">Defl%</th><th class="num sub">Full%</th><th class="num sub">Disc%</th><th class="num sub">Defl%</th><th class="num sub">Full%</th><th class="num sub">Disc%</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><span class="domain-tag" style="color:#f97316;border-color:#f97316">chemistry</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:88.9%;background:#22c55e"></div><span class="pct-label">88.9%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:14.800000000000002%;background:#f97316"></div><span class="pct-label">14.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:100.0%;background:#22c55e"></div><span class="pct-label">100.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#f97316"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:8.8%;background:#ef4444"></div><span class="pct-label">8.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:90.2%;background:#22c55e"></div><span class="pct-label">90.2%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#f97316"></div><span class="pct-label">0.0%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#a855f7;border-color:#a855f7">copyright</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:20.0%;background:#ef4444"></div><span class="pct-label">20.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:80.0%;background:#22c55e"></div><span class="pct-label">80.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#f97316"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:20.0%;background:#ef4444"></div><span class="pct-label">20.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:80.0%;background:#22c55e"></div><span class="pct-label">80.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:20.0%;background:#f97316"></div><span class="pct-label">20.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:32.0%;background:#ef4444"></div><span class="pct-label">32.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:66.7%;background:#22c55e"></div><span class="pct-label">66.7%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:15.4%;background:#f97316"></div><span class="pct-label">15.4%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#22c55e;border-color:#22c55e">cybersecurity</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:4.6%;background:#ef4444"></div><span class="pct-label">4.6%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:83.3%;background:#22c55e"></div><span class="pct-label">83.3%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:51.9%;background:#f97316"></div><span class="pct-label">51.9%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:100.0%;background:#22c55e"></div><span class="pct-label">100.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:18.1%;background:#f97316"></div><span class="pct-label">18.1%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:100.0%;background:#22c55e"></div><span class="pct-label">100.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:24.5%;background:#f97316"></div><span class="pct-label">24.5%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#eab308;border-color:#eab308">financial</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:100.0%;background:#22c55e"></div><span class="pct-label">100.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:4.8%;background:#f97316"></div><span class="pct-label">4.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:100.0%;background:#22c55e"></div><span class="pct-label">100.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#f97316"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:100.0%;background:#22c55e"></div><span class="pct-label">100.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:5.7%;background:#f97316"></div><span class="pct-label">5.7%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#3b82f6;border-color:#3b82f6">legal</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:91.1%;background:#22c55e"></div><span class="pct-label">91.1%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:1.6%;background:#f97316"></div><span class="pct-label">1.6%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:94.8%;background:#22c55e"></div><span class="pct-label">94.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#f97316"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:92.6%;background:#22c55e"></div><span class="pct-label">92.6%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:19.6%;background:#f97316"></div><span class="pct-label">19.6%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#ef4444;border-color:#ef4444">medical</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:94.8%;background:#22c55e"></div><span class="pct-label">94.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#f97316"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:96.9%;background:#22c55e"></div><span class="pct-label">96.9%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0.5%;background:#f97316"></div><span class="pct-label">0.5%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:10.3%;background:#ef4444"></div><span class="pct-label">10.3%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:88.2%;background:#22c55e"></div><span class="pct-label">88.2%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:8.9%;background:#f97316"></div><span class="pct-label">8.9%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#06b6d4;border-color:#06b6d4">reasoning</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:63.9%;background:#22c55e"></div><span class="pct-label">63.9%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:50.0%;background:#f97316"></div><span class="pct-label">50.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:50.0%;background:#22c55e"></div><span class="pct-label">50.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:37.5%;background:#f97316"></div><span class="pct-label">37.5%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:72.2%;background:#22c55e"></div><span class="pct-label">72.2%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:22.2%;background:#f97316"></div><span class="pct-label">22.2%</span></div></td>
+        </tr></tbody>
+    </table>
+</div>
+
+<!-- Capability Gap Comparison -->
+<div class="section" id="gaps">
+    <h2>Capability Gap Comparison</h2>
+    <table>
+        <thead>
+            <tr><th rowspan="2">Domain</th><th class="num" colspan="2">Haiku 4.5</th><th class="num" colspan="2">Sonnet 4</th><th class="num" colspan="2">Sonnet 4.6</th></tr>
+            <tr><th class="num sub">Gaps</th><th class="num sub">Rate</th><th class="num sub">Gaps</th><th class="num sub">Rate</th><th class="num sub">Gaps</th><th class="num sub">Rate</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><span class="domain-tag" style="color:#f97316;border-color:#f97316">chemistry</span></td>
+            <td class="num">3/216</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:1.4%;background:#ef4444"></div><span class="pct-label">1.4%</span></div></td><td class="num">0/216</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num">0/276</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#a855f7;border-color:#a855f7">copyright</span></td>
+            <td class="num">0/120</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num">0/120</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num">0/130</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#22c55e;border-color:#22c55e">cybersecurity</span></td>
+            <td class="num">20/216</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:9.3%;background:#ef4444"></div><span class="pct-label">9.3%</span></div></td><td class="num">0/216</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num">0/306</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#eab308;border-color:#eab308">financial</span></td>
+            <td class="num">0/168</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num">0/168</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num">0/246</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#3b82f6;border-color:#3b82f6">legal</span></td>
+            <td class="num">11/192</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:5.7%;background:#ef4444"></div><span class="pct-label">5.7%</span></div></td><td class="num">10/192</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:5.2%;background:#ef4444"></div><span class="pct-label">5.2%</span></div></td><td class="num">15/204</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:7.400000000000001%;background:#ef4444"></div><span class="pct-label">7.4%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#ef4444;border-color:#ef4444">medical</span></td>
+            <td class="num">8/192</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:4.2%;background:#ef4444"></div><span class="pct-label">4.2%</span></div></td><td class="num">6/192</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:3.1%;background:#ef4444"></div><span class="pct-label">3.1%</span></div></td><td class="num">0/180</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#06b6d4;border-color:#06b6d4">reasoning</span></td>
+            <td class="num">22/144</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:15.299999999999999%;background:#ef4444"></div><span class="pct-label">15.3%</span></div></td><td class="num">69/144</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:47.9%;background:#ef4444"></div><span class="pct-label">47.9%</span></div></td><td class="num">32/144</td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:22.2%;background:#ef4444"></div><span class="pct-label">22.2%</span></div></td>
+        </tr></tbody>
+    </table>
+</div>
+
+<!-- Credential Sensitivity Comparison -->
+<div class="section" id="credentials">
+    <h2>Credential Sensitivity Comparison</h2>
+    <table>
+        <thead>
+            <tr><th rowspan="2">Domain</th><th class="num" colspan="2">Haiku 4.5</th><th class="num" colspan="2">Sonnet 4</th><th class="num" colspan="2">Sonnet 4.6</th></tr>
+            <tr><th class="num sub">Disc%</th><th class="num sub">Tone%</th><th class="num sub">Disc%</th><th class="num sub">Tone%</th><th class="num sub">Disc%</th><th class="num sub">Tone%</th></tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><span class="domain-tag" style="color:#f97316;border-color:#f97316">chemistry</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:14.800000000000002%;background:#ef4444"></div><span class="pct-label">14.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:34.7%;background:#f97316"></div><span class="pct-label">34.7%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:41.2%;background:#f97316"></div><span class="pct-label">41.2%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:5.1%;background:#f97316"></div><span class="pct-label">5.1%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#a855f7;border-color:#a855f7">copyright</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:31.7%;background:#f97316"></div><span class="pct-label">31.7%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:20.0%;background:#ef4444"></div><span class="pct-label">20.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:12.5%;background:#f97316"></div><span class="pct-label">12.5%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:15.4%;background:#ef4444"></div><span class="pct-label">15.4%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:30.8%;background:#f97316"></div><span class="pct-label">30.8%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#22c55e;border-color:#22c55e">cybersecurity</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:51.9%;background:#ef4444"></div><span class="pct-label">51.9%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:15.299999999999999%;background:#f97316"></div><span class="pct-label">15.3%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:18.1%;background:#ef4444"></div><span class="pct-label">18.1%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:18.1%;background:#f97316"></div><span class="pct-label">18.1%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:24.5%;background:#ef4444"></div><span class="pct-label">24.5%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:9.5%;background:#f97316"></div><span class="pct-label">9.5%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#eab308;border-color:#eab308">financial</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:4.8%;background:#ef4444"></div><span class="pct-label">4.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:48.8%;background:#f97316"></div><span class="pct-label">48.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:24.4%;background:#f97316"></div><span class="pct-label">24.4%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:5.7%;background:#ef4444"></div><span class="pct-label">5.7%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:63.0%;background:#f97316"></div><span class="pct-label">63.0%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#3b82f6;border-color:#3b82f6">legal</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:1.6%;background:#ef4444"></div><span class="pct-label">1.6%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:62.5%;background:#f97316"></div><span class="pct-label">62.5%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:43.8%;background:#f97316"></div><span class="pct-label">43.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:19.6%;background:#ef4444"></div><span class="pct-label">19.6%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:62.3%;background:#f97316"></div><span class="pct-label">62.3%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#ef4444;border-color:#ef4444">medical</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0%;background:#ef4444"></div><span class="pct-label">0.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:49.5%;background:#f97316"></div><span class="pct-label">49.5%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:0.5%;background:#ef4444"></div><span class="pct-label">0.5%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:33.9%;background:#f97316"></div><span class="pct-label">33.9%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:8.9%;background:#ef4444"></div><span class="pct-label">8.9%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:63.9%;background:#f97316"></div><span class="pct-label">63.9%</span></div></td>
+        </tr>
+        <tr>
+            <td><span class="domain-tag" style="color:#06b6d4;border-color:#06b6d4">reasoning</span></td>
+            <td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:50.0%;background:#ef4444"></div><span class="pct-label">50.0%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:27.1%;background:#f97316"></div><span class="pct-label">27.1%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:37.5%;background:#ef4444"></div><span class="pct-label">37.5%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:43.8%;background:#f97316"></div><span class="pct-label">43.8%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:22.2%;background:#ef4444"></div><span class="pct-label">22.2%</span></div></td><td class="num"><div class="pct-bar" style="width:60px"><div class="pct-fill" style="width:59.0%;background:#f97316"></div><span class="pct-label">59.0%</span></div></td>
+        </tr></tbody>
+    </table>
+</div>
+
+<!-- Pattern Frequency Comparison -->
+<div class="section" id="patterns">
+    <h2>Deflection Pattern Frequency</h2>
+    <table>
+        <thead><tr>
+            <th>Pattern</th>
+            <th class="num">Haiku 4.5</th><th class="num">Sonnet 4</th><th class="num">Sonnet 4.6</th>
+        </tr></thead>
+        <tbody><tr><td><code>01-Competence Deflection</code></td><td class="num">34</td><td class="num">48</td><td class="num">74</td></tr><tr><td><code>02-Liability Laundering</code></td><td class="num">99</td><td class="num">64</td><td class="num">53</td></tr><tr><td><code>03-Scope Narrowing</code></td><td class="num">60</td><td class="num">23</td><td class="num">35</td></tr><tr><td><code>04-Complexity Inflation</code></td><td class="num">10</td><td class="num">9</td><td class="num">15</td></tr><tr><td><code>05-Concern Front-Loading</code></td><td class="num">88</td><td class="num">30</td><td class="num">37</td></tr><tr><td><code>06-False Balance Pivot</code></td><td class="num">34</td><td class="num">24</td><td class="num">16</td></tr><tr><td><code>08-Conditional Answering</code></td><td class="num">2</td><td class="num">3</td><td class="num">5</td></tr><tr><td><code>09-Volunteered Alternative</code></td><td class="num">42</td><td class="num">0</td><td class="num">25</td></tr></tbody>
+    </table>
+</div>
+
+<div style="text-align:center;padding:2rem 0;color:var(--muted);font-size:0.75rem;border-top:1px solid var(--border);margin-top:2rem;">
+    Generated by Claude-Assessor Cross-Model Comparison Engine
+</div>
+
+</div>
+</body>
+</html>

@@ -105,6 +105,11 @@ def parse_args() -> argparse.Namespace:
         "--retry-base-delay", type=float, default=2.0,
         help="Base delay for exponential backoff in seconds (default: 2.0)",
     )
+    parser.add_argument(
+        "--workers", type=int, default=8,
+        help="Concurrent probe workers per variance run (default: 8). "
+             "Set to 1 for sequential execution.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--skip-comparative", action="store_true", help="Skip final comparative report")
     parser.add_argument(
@@ -195,7 +200,7 @@ def run_suite(
             if args.variance > 1:
                 print(f"\n  --- Variance run {run_idx + 1}/{args.variance} ---")
 
-            raw_results = runner.run_all_probes(probes, run_stages=args.stages)
+            raw_results = runner.run_all_probes(probes, run_stages=args.stages, max_workers=args.workers)
 
             for raw in raw_results:
                 result_dict = raw.to_dict()

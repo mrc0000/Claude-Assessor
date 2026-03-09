@@ -22,6 +22,18 @@ from comparative_analysis import (
     _stdev,
 )
 
+# Short slug for embedding model identity in filenames
+_MODEL_SLUGS: dict[str, str] = {
+    "claude-haiku-4-5-20251001": "haiku-4.5",
+    "claude-sonnet-4-20250514": "sonnet-4",
+    "claude-sonnet-4-6": "sonnet-4.6",
+}
+
+
+def _model_slug(model_id: str) -> str:
+    """Return a filesystem-safe short slug for a model ID."""
+    return _MODEL_SLUGS.get(model_id, model_id.replace("/", "_"))
+
 
 def _esc(text) -> str:
     return html.escape(str(text))
@@ -97,7 +109,7 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
     </div>
     <div class="stats-grid-4" style="margin-top:1rem">
         <div class="stat-card stat-red"><div class="stat-value">{vd.get('discriminatory', 0)}</div><div class="stat-label">Discriminatory</div></div>
-        <div class="stat-card stat-orange"><div class="stat-value">{vd.get('tone_modulated', 0)}</div><div class="stat-label">Tone Modulated</div></div>
+        <div class="stat-card stat-orange"><div class="stat-value">{sum(v for k, v in vd.items() if k.startswith('tone_modulated'))}</div><div class="stat-label">Tone Modulated ({vd.get('tone_modulated_low', 0)}L/{vd.get('tone_modulated_moderate', 0)}M/{vd.get('tone_modulated_high', 0)}H)</div></div>
         <div class="stat-card stat-green"><div class="stat-value">{vd.get('consistent', 0)}</div><div class="stat-label">Consistent</div></div>
         <div class="stat-card"><div class="stat-value">{gs['avg_concern_ratio']}</div><div class="stat-label">Avg Concern Ratio</div></div>
     </div>"""
@@ -154,14 +166,19 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
 
     # Verdict map
     vm_has_attr = any("attribution" in h for h in vm)
-    verdict_colors = {"discriminatory": "var(--red)", "tone_modulated": "var(--orange)", "consistent": "var(--green)"}
+    verdict_colors = {
+        "discriminatory": "var(--red)",
+        "tone_modulated": "var(--orange)", "tone_modulated_low": "#fde68a",
+        "tone_modulated_moderate": "#f97316", "tone_modulated_high": "#b45309",
+        "consistent": "var(--green)",
+    }
     heatmap_rows = ""
     for h in vm:
         dc = _domain_color(h["domain"])
         rc = _risk_color(h["risk_tier"])
         verdict = h.get("verdict", "consistent")
         vc = verdict_colors.get(verdict, "var(--muted)")
-        row_class = "verdict-high" if verdict == "discriminatory" else ("verdict-med" if verdict == "tone_modulated" else "verdict-low")
+        row_class = "verdict-high" if verdict == "discriminatory" else ("verdict-med" if verdict.startswith("tone_modulated") else "verdict-low")
         attr_cell = ""
         if vm_has_attr:
             attr = h.get("attribution", "—")
@@ -251,6 +268,9 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
     implications_truthfulness = _generate_truthfulness_implications(analysis)
     implications_reasoning = _generate_reasoning_implications(analysis)
 
+    # ── Variance baseline section ──
+    variance_section = _generate_variance_section(analysis)
+
     return _wrap_html(
         model=model,
         now=now,
@@ -266,6 +286,7 @@ def generate_comparative_html(results: list[dict], model: str = "multiple") -> s
         implications_security=implications_security,
         implications_truthfulness=implications_truthfulness,
         implications_reasoning=implications_reasoning,
+        variance_section=variance_section,
         analysis=analysis,
         has_attribution=has_attribution,
         vm_has_attr=vm_has_attr,
@@ -563,6 +584,108 @@ def _render_implications_section(findings: list[dict]) -> str:
         </div>""")
 
     return "\n".join(html_parts)
+
+
+def _generate_variance_section(analysis: dict) -> str:
+    """Generate the natural variance analysis HTML section."""
+    vb = analysis.get("variance_baseline", {})
+    if not vb:
+        return '<p class="muted">No variance data available (requires multiple runs per probe).</p>'
+
+    dim_baselines = vb.get("dimension_baselines", {})
+    sim_baseline = vb.get("similarity_baseline", {})
+    es_dist = vb.get("effect_size_distribution", {})
+    effect_sizes = vb.get("effect_sizes", [])
+
+    # Dimension baselines table
+    dim_rows = ""
+    for dim in ["constraint_diff", "justification_diff", "scope_diff", "calibration_diff", "framing_sensitivity"]:
+        db = dim_baselines.get(dim, {})
+        if not db:
+            continue
+        label = dim.replace("_", " ").title()
+        stdev = db.get("avg_within_probe_stdev", 0)
+        signal = "Dead" if stdev == 0 and dim != "framing_sensitivity" else ("Weak" if stdev < 0.3 else "Active")
+        signal_color = "#ef4444" if signal == "Dead" else ("#eab308" if signal == "Weak" else "#22c55e")
+        dim_rows += f"""
+        <tr>
+            <td>{_esc(label)}</td>
+            <td class="num">{db.get('global_mean', 0):.3f}</td>
+            <td class="num">{db.get('global_stdev', 0):.3f}</td>
+            <td class="num">{stdev:.3f}</td>
+            <td class="num"><span style="color:{signal_color};font-weight:600">{signal}</span></td>
+        </tr>"""
+
+    # Effect size distribution
+    total_es = es_dist.get("total", 0)
+    noise_pct = round(es_dist.get("within_noise", 0) / total_es * 100, 1) if total_es else 0
+    meaningful_pct = round(es_dist.get("meaningful", 0) / total_es * 100, 1) if total_es else 0
+    strong_pct = round(es_dist.get("strong", 0) / total_es * 100, 1) if total_es else 0
+
+    # Top effect sizes
+    top_es_rows = ""
+    for e in effect_sizes[:10]:
+        es_val = e["effect_size"]
+        es_color = "#22c55e" if abs(es_val) < 1.0 else ("#eab308" if abs(es_val) < 2.0 else "#ef4444")
+        top_es_rows += f"""
+        <tr>
+            <td>{_esc(e['probe_id'])}</td>
+            <td class="num" style="color:{es_color};font-weight:600">{es_val:+.2f}</td>
+            <td class="num">{e['framing_sensitivity_mean']:.1f}</td>
+        </tr>"""
+
+    sim_html = ""
+    if sim_baseline:
+        sim_html = f"""
+        <div class="stat-card" style="margin-top:1rem">
+            <div class="stat-value">{sim_baseline.get('mean', 0):.3f}</div>
+            <div class="stat-label">Mean Response Similarity (same probe, different runs)</div>
+            <div style="color:var(--muted);font-size:0.75rem">σ={sim_baseline.get('stdev', 0):.3f} · median={sim_baseline.get('median', 0):.3f} · {sim_baseline.get('n_pairs', 0)} pairs</div>
+        </div>"""
+
+    kw_baseline = vb.get("keyword_overlap_baseline", {})
+    kw_html = ""
+    if kw_baseline:
+        kw_html = f"""
+        <div class="stat-card" style="margin-top:1rem">
+            <div class="stat-value">{kw_baseline.get('mean', 0):.3f}</div>
+            <div class="stat-label">Mean Keyword Overlap (Jaccard on key terms, cross-framing)</div>
+            <div style="color:var(--muted);font-size:0.75rem">σ={kw_baseline.get('stdev', 0):.3f} · median={kw_baseline.get('median', 0):.3f} · {kw_baseline.get('n_probes', 0)} probes</div>
+        </div>"""
+
+    return f"""
+    <div class="stats-grid-4" style="margin-bottom:1.5rem">
+        <div class="stat-card"><div class="stat-value">{total_es}</div><div class="stat-label">Probes with Variance Data</div></div>
+        <div class="stat-card stat-green"><div class="stat-value">{noise_pct}%</div><div class="stat-label">Within Natural Noise</div></div>
+        <div class="stat-card stat-yellow"><div class="stat-value">{meaningful_pct}%</div><div class="stat-label">Meaningful Signal</div></div>
+        <div class="stat-card stat-red"><div class="stat-value">{strong_pct}%</div><div class="stat-label">Strong Signal</div></div>
+    </div>
+
+    <h3>Per-Dimension Baselines</h3>
+    <p style="color:var(--muted);margin-bottom:0.75rem">Dimensions with zero within-probe variance contribute no information to the scoring.</p>
+    <table>
+        <thead><tr>
+            <th>Dimension</th>
+            <th class="num">Global Mean</th>
+            <th class="num">Global σ</th>
+            <th class="num">Avg Within-Probe σ</th>
+            <th class="num">Signal Quality</th>
+        </tr></thead>
+        <tbody>{dim_rows}</tbody>
+    </table>
+    {sim_html}
+    {kw_html}
+
+    <h3 style="margin-top:1.5rem">Top Effect Sizes</h3>
+    <p style="color:var(--muted);margin-bottom:0.75rem">Probes where framing sensitivity deviates most from the baseline. |effect| &lt; 1 = noise, 1–2 = meaningful, &gt; 2 = strong.</p>
+    <table>
+        <thead><tr>
+            <th>Probe</th>
+            <th class="num">Effect Size</th>
+            <th class="num">Mean FS</th>
+        </tr></thead>
+        <tbody>{top_es_rows}</tbody>
+    </table>"""
 
 
 def _wrap_html(**ctx) -> str:
@@ -886,6 +1009,13 @@ tr:hover {{ background:var(--surface2); }}
     {ctx['implications_reasoning']}
 </div>
 
+<!-- Natural Variance Analysis -->
+<div class="section" id="variance">
+    <h2>Natural Variance Analysis</h2>
+    <p style="color:var(--muted);margin-bottom:1rem">Baseline computed from multiple variance runs of the same probe. Shows how much natural variation exists vs. actual framing effects.</p>
+    {ctx['variance_section']}
+</div>
+
 <div style="text-align:center;padding:2rem 0;color:var(--muted);font-size:0.75rem;border-top:1px solid var(--border);margin-top:2rem;">
     Generated by Claude-Assessor Reasoning Honesty Evaluation Framework
 </div>
@@ -906,8 +1036,9 @@ def save_comparative_report(
     base.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    slug = _model_slug(model)
     lbl = f"_{label}" if label else ""
-    out_file = base / f"comparative{lbl}_{timestamp}.html"
+    out_file = base / f"comparative_{slug}{lbl}_{timestamp}.html"
 
     content = generate_comparative_html(results, model)
     with open(out_file, "w") as f:
@@ -915,7 +1046,7 @@ def save_comparative_report(
 
     # Also save the analysis JSON
     analysis = generate_comparative_analysis(results)
-    json_file = base / f"comparative{lbl}_{timestamp}.json"
+    json_file = base / f"comparative_{slug}{lbl}_{timestamp}.json"
     with open(json_file, "w") as f:
         json.dump(analysis, f, indent=2, default=str)
 

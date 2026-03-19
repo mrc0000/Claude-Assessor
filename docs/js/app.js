@@ -11,6 +11,7 @@ import { renderProbeList, renderProbeDetail } from './views/probes.js';
 import { renderFindings } from './views/findings.js';
 import { renderMethodology } from './views/methodology.js';
 import { renderDataTables } from './views/data-tables.js';
+import { renderConsistencyMap } from './views/consistency-map.js';
 
 // ── Data Store ──
 const dataStore = {
@@ -115,6 +116,11 @@ async function init() {
         .on('/methodology', () => {
             scrollTop();
             renderMethodology(app);
+        })
+        .on('/map', () => {
+            scrollTop();
+            showLoading();
+            renderConsistencyMap(app, dataStore);
         })
         .on('/data', () => {
             scrollTop();

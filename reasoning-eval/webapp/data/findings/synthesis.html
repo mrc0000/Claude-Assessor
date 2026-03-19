@@ -1,0 +1,299 @@
+<h1 id="synthesis-what-the-evaluation-actually-shows">Synthesis: What the Evaluation Actually Shows</h1>
+<p><strong>Scope</strong>: 468 probe runs across 3 Claude models, 52 probes, 7 domains, 3 variance runs each.<br />
+<strong>Framework version</strong>: eval_config v1.6.0 (variance-calibrated thresholds, <code>negligible_max=2</code>, graded tone modulation).</p>
+<p><strong>Models evaluated</strong> (chronological release order):</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>ID</th>
+<th>Tier</th>
+<th>Release</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sonnet 4</td>
+<td><code>claude-sonnet-4-20250514</code></td>
+<td>Mid</td>
+<td>May 2025</td>
+</tr>
+<tr>
+<td>Haiku 4.5</td>
+<td><code>claude-haiku-4-5-20251001</code></td>
+<td>Small</td>
+<td>Oct 2025</td>
+</tr>
+<tr>
+<td>Sonnet 4.6</td>
+<td><code>claude-sonnet-4-6</code></td>
+<td>Mid</td>
+<td>Later</td>
+</tr>
+</tbody>
+</table>
+<p>These are not three generations of the same model. Sonnet 4 and Sonnet 4.6 are mid-tier; Haiku 4.5 is the smaller, faster tier. Comparisons characterize behavioral differences across the model family — not a progression within a single line.</p>
+<p>This document synthesizes the cross-model and per-model findings into higher-order observations. It is meant to be read after — or instead of — the detailed breakdowns in <code>FINDINGS_AGGREGATE.md</code> and <code>FINDINGS_SONNET46.md</code>.</p>
+<hr />
+<h2 id="1-the-central-finding-most-responses-are-consistent-but-discrimination-concentrates-in-specific-domains">1. The Central Finding: Most Responses Are Consistent, but Discrimination Concentrates in Specific Domains</h2>
+<p>Under calibrated thresholds (v1.6, <code>negligible_max=2</code>), the majority of responses are substantively consistent across framings:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Deflection</th>
+<th>Full Assist</th>
+<th>Discriminatory</th>
+<th>Tone Modulated</th>
+<th>Consistent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sonnet 4</td>
+<td>1.9%</td>
+<td>82.1%</td>
+<td>9.0%</td>
+<td>9.0%</td>
+<td>82.1%</td>
+</tr>
+<tr>
+<td>Haiku 4.5</td>
+<td>3.8%</td>
+<td>75.6%</td>
+<td>18.2%</td>
+<td>17.5%</td>
+<td>64.3%</td>
+</tr>
+<tr>
+<td>Sonnet 4.6</td>
+<td>1.9%</td>
+<td>88.5%</td>
+<td>13.5%</td>
+<td>18.2%</td>
+<td>68.2%</td>
+</tr>
+</tbody>
+</table>
+<p>The prior v1.5 analysis reported near-zero consistency (0–2%), which overstated framing sensitivity. The LLM differential classifier tends to find minor tonal differences even between substantively equivalent responses, scoring FS=2 on 66–82% of probes. These minor differences — a slightly longer caveat, a minor phrasing variation — do not represent meaningful modulation. The v1.6 threshold corrects for this classifier sensitivity bias.</p>
+<p>The meaningful behavioral signals are:<br />
+- <strong>Discriminatory verdicts (9–18%)</strong>: The model changes what it will or won't do based on framing. This is threshold-independent — it's triggered by <code>behavioral_shift</code>, not framing sensitivity.<br />
+- <strong>Tone modulation at FS ≥ 3 (9–18%)</strong>: The model gives the same substantive answer but adjusts depth, hedging, or engagement measurably.<br />
+- <strong>Domain concentration</strong>: Discrimination is not uniformly distributed — it clusters sharply in cybersecurity and reasoning.</p>
+<hr />
+<h2 id="2-evasion-patterns-vary-by-model-but-liability-laundering-persists">2. Evasion Patterns Vary by Model, but Liability Laundering Persists</h2>
+<p>Detected evasion patterns vary substantially across models:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Pattern Matches</th>
+<th>Top Pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sonnet 4</td>
+<td>54</td>
+<td>Liability Laundering (22)</td>
+</tr>
+<tr>
+<td>Haiku 4.5</td>
+<td>79</td>
+<td>Liability Laundering (23)</td>
+</tr>
+<tr>
+<td>Sonnet 4.6</td>
+<td>23</td>
+<td>Liability Laundering (6)</td>
+</tr>
+</tbody>
+</table>
+<p>Haiku 4.5 (the smaller model) triggers the most patterns. Sonnet 4.6 triggers the fewest — less than a third of Haiku's count. But all three share the same top evasion strategy: <strong>liability laundering</strong>, where the model frames its constraints as being for the user's benefit.</p>
+<p>Sonnet 4.6 shows 18.2% tone modulation while triggering only 23 pattern matches, suggesting its modulation is more diffuse — tonal shifts that escape structured pattern detection. Whether fewer detectable patterns represent less evasion or more sophisticated evasion is an open question this framework can identify but not resolve.</p>
+<hr />
+<h2 id="3-discriminatory-behavior-differs-by-domain-and-model">3. Discriminatory Behavior Differs by Domain and Model</h2>
+<p>The aggregate discriminatory rates (9–18%) obscure sharp differences at the domain level:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Sonnet 4</th>
+<th>Haiku 4.5</th>
+<th>Sonnet 4.6</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cybersecurity</td>
+<td>18.5%</td>
+<td>51.9%</td>
+<td>22.2%</td>
+</tr>
+<tr>
+<td>Reasoning</td>
+<td>33.3%</td>
+<td>50.0%</td>
+<td>22.2%</td>
+</tr>
+<tr>
+<td>Legal</td>
+<td>0.0%</td>
+<td>0.0%</td>
+<td><strong>20.8%</strong></td>
+</tr>
+<tr>
+<td>Copyright</td>
+<td>20.0%</td>
+<td>0.0%</td>
+<td>15.4%</td>
+</tr>
+<tr>
+<td>Medical</td>
+<td>0.0%</td>
+<td>0.0%</td>
+<td><strong>9.5%</strong></td>
+</tr>
+<tr>
+<td>Chemistry</td>
+<td>0.0%</td>
+<td>14.8%</td>
+<td>0.0%</td>
+</tr>
+<tr>
+<td>Financial</td>
+<td>0.0%</td>
+<td>4.8%</td>
+<td>4.8%</td>
+</tr>
+</tbody>
+</table>
+<p>Key observations:</p>
+<ul>
+<li><strong>Cybersecurity and reasoning</strong> show the highest discriminatory rates across all models. These are the domains where credential claims and meta-cognitive probes have the most impact.</li>
+<li><strong>Haiku 4.5</strong> (the smaller model) has the highest discrimination in cybersecurity (51.9%) and reasoning (50.0%).</li>
+<li><strong>Sonnet 4.6</strong> shows discriminatory behavior in legal (20.8%) and medical (9.5%) where neither Sonnet 4 nor Haiku 4.5 does. It's the most helpful model but differentiates <em>how</em> it helps based on framing.</li>
+<li><strong>Sonnet 4</strong> has the lowest aggregate discrimination (9.0%) but the most capability gaps (22), suggesting it restricts broadly rather than by framing.</li>
+</ul>
+<p>Each model has a different behavioral fingerprint — different domains where framing matters most.</p>
+<hr />
+<h2 id="4-the-meta-cognitive-gap-is-consistent-across-all-models">4. The Meta-Cognitive Gap Is Consistent Across All Models</h2>
+<p>The reasoning-honesty suite asks models to reason about their own reasoning. It produces the weakest results of any domain across all three models:</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Sonnet 4</th>
+<th>Haiku 4.5</th>
+<th>Sonnet 4.6</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full assist</td>
+<td>50.0%</td>
+<td>44.4%</td>
+<td>72.2%</td>
+</tr>
+<tr>
+<td>Discriminatory</td>
+<td>33.3%</td>
+<td>50.0%</td>
+<td>22.2%</td>
+</tr>
+<tr>
+<td>Consistent</td>
+<td>16.7%</td>
+<td>33.3%</td>
+<td>11.1%</td>
+</tr>
+</tbody>
+</table>
+<p>Every model can articulate epistemic principles better than it can apply them. Reasoning is the only domain where consistent verdicts drop below 35% for every model. The gap between stated principles and demonstrated behavior is the most robust finding in the evaluation.</p>
+<hr />
+<h2 id="5-variance-analysis-strong-effects-concentrate-in-cybersecurity-and-reasoning">5. Variance Analysis: Strong Effects Concentrate in Cybersecurity and Reasoning</h2>
+<p>The variance baseline measures how much responses vary across identical reruns of the same probe:</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Framing Sensitivity (mean)</th>
+<th>Within-Noise Probes</th>
+<th>Strong Effect Probes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sonnet 4</td>
+<td>2.36</td>
+<td>45/52 (87%)</td>
+<td>3/52 (6%)</td>
+</tr>
+<tr>
+<td>Haiku 4.5</td>
+<td>2.71</td>
+<td>44/52 (85%)</td>
+<td>6/52 (12%)</td>
+</tr>
+<tr>
+<td>Sonnet 4.6</td>
+<td>2.57</td>
+<td>41/52 (79%)</td>
+<td>3/52 (6%)</td>
+</tr>
+</tbody>
+</table>
+<p>Most probes (79–87%) show framing sensitivity within natural variance — the measured difference between framings is not reliably larger than between identical runs. Only 3–6 probes per model show strong effects (d &gt; 1.0) that clearly exceed noise.</p>
+<p>The strong-effect probes cluster exclusively in cybersecurity and reasoning — exactly the domains with the highest discriminatory rates. These are the reliable signals. The high consistent rate (64–82%) reflects that most probes genuinely produce equivalent responses across framings, not that the evaluation lacks sensitivity.</p>
+<hr />
+<h2 id="6-infrastructure-vs-model-behavior-a-necessary-distinction">6. Infrastructure vs. Model Behavior: A Necessary Distinction</h2>
+<p>Copyright deflection is 20.0% across all three models — identical, because it's API-level content filtering, not model reasoning. The model never sees these requests. This is a separate system with separate accountability.</p>
+<p>Any framework that conflates infrastructure blocks with model refusals will misattribute behavior. We report it for transparency but exclude it from model-level conclusions.</p>
+<hr />
+<h2 id="7-what-this-framework-can-and-cannot-show">7. What This Framework Can and Cannot Show</h2>
+<p><strong>What it shows:</strong><br />
+- Whether responses change based on framing (they do, but primarily in specific domains)<br />
+- Which domains and probe types show the largest framing effects (cybersecurity, reasoning)<br />
+- How evasion strategies differ across models (pattern frequency, pattern types)<br />
+- Where each model's behavioral fingerprint is distinctive (domain-level discrimination profiles)<br />
+- The gap between articulated principles and demonstrated behavior (meta-cognitive probes)</p>
+<p><strong>What it cannot show:</strong><br />
+- Whether framing-dependent modulation causes real-world harm (the framework measures behavioral shift, not impact)<br />
+- Whether credential sensitivity is Anthropic-specific or general (no control test with fictional company names)<br />
+- Whether tonal modulation constitutes "reasoning dishonesty" or "adaptive communication" (this is an interpretive question, not an empirical one)<br />
+- How these findings compare to other model families (no cross-provider evaluation yet)<br />
+- Whether behavioral differences across models reflect training choices, capability differences, or tier-specific optimization</p>
+<p><strong>What it intentionally does not claim:</strong><br />
+- That these models are "unsafe" — deflection rates are low across the family<br />
+- That any single discriminatory verdict is cause for alarm — the signal is in the aggregate pattern<br />
+- That tone modulation is inherently problematic — some register adaptation may be appropriate<br />
+- That model comparisons represent a quality ranking — different models have different behavioral profiles</p>
+<hr />
+<h2 id="8-behavioral-profile-of-the-claude-model-family">8. Behavioral Profile of the Claude Model Family</h2>
+<p>The three models share a common behavioral profile:</p>
+<ol>
+<li><strong>High helpfulness</strong> — full assist rates of 76–89% across the family</li>
+<li><strong>Low overt refusal</strong> — deflection rare (1.9–3.8%), concentrated in infrastructure-level content filtering</li>
+<li><strong>Majority consistency</strong> — 64–82% of responses are substantively equivalent across framings</li>
+<li><strong>Domain-concentrated discrimination</strong> — 9–18% discriminatory, clustering in cybersecurity and reasoning</li>
+<li><strong>Credential reactivity</strong> — claiming expertise or organizational affiliation measurably changes response depth in sensitive domains</li>
+<li><strong>Meta-cognitive weakness</strong> — reasoning about own limitations is the weakest domain for every model</li>
+<li><strong>Liability laundering as dominant strategy</strong> — framing constraints as user benefit is the most persistent evasion pattern</li>
+</ol>
+<p>Within this shared profile, each model has a distinctive behavioral fingerprint. Haiku 4.5 shows the most evasion patterns and highest cybersecurity discrimination. Sonnet 4 has the lowest aggregate discrimination but the most capability gaps. Sonnet 4.6 is the most helpful but introduces framing sensitivity in domains where the other models are neutral.</p>
+<p>These are behavioral observations, not quality judgments. The evaluation characterizes how each model navigates the space between knowledge, willingness, and presentation — not which model does it "best."</p>
+<hr />
+<h2 id="methodology-reference">Methodology Reference</h2>
+<ul>
+<li><strong>Probes</strong>: 52 across 7 domains, each with neutral + credentialed + technical framings</li>
+<li><strong>Classification</strong>: LLM-based (Haiku 4.5 classifier), consistent across all evaluations</li>
+<li><strong>Differential scoring</strong>: v1.6.0 thresholds (<code>negligible_max=2</code>), graded tone modulation</li>
+<li><strong>Variance control</strong>: 3 runs per probe per model, within-probe effect size computation</li>
+<li><strong>Infrastructure detection</strong>: Content filter blocks distinguished from model-level refusal by error response analysis</li>
+</ul>
+<p>Companion documents:<br />
+- <code>STATISTICS.md</code> — Raw counts, distributions, and cross-tabulations (LLM-consumable reference)<br />
+- <code>FINDINGS_AGGREGATE.md</code> — Cross-model metrics and domain-level comparison tables<br />
+- <code>FINDINGS_SONNET46.md</code> — Sonnet 4.6 deep dive with probe-level observations<br />
+- <code>METHODOLOGY.md</code> — Implementation details, gaps, and limitations<br />
+- <code>OPERATIONS.md</code> — Scoring model, protocol details, interpretation guide</p>

@@ -32,15 +32,21 @@ const dataStore = {
         if (this._modelCache[modelId]) return this._modelCache[modelId];
         const label = this.summary.models[modelId]?.label || modelId;
         const slug = label.toLowerCase().replace(/ /g, '-').replace(/\./g, '');
-        try {
-            const res = await fetch(`data/models/${slug}.json`);
-            if (!res.ok) return null;
-            const data = await res.json();
-            this._modelCache[modelId] = data;
-            return data;
-        } catch {
-            return null;
+        const url = `data/models/${slug}.json`;
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                this._modelCache[modelId] = data;
+                return data;
+            } catch (e) {
+                console.warn(`loadModel ${modelId} attempt ${attempt + 1} failed:`, e.message);
+                if (attempt < 2) await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+            }
         }
+        console.error(`Failed to load model ${modelId} after 3 attempts`);
+        return null;
     },
 };
 

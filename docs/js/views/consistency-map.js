@@ -31,9 +31,16 @@ export async function renderConsistencyMap(container, data) {
     const modelEntries = [];
     const probeMap = {}; // probeId → { domain, risk_tier, models: { modelId: [results] } }
 
-    for (const modelId of Object.keys(data.summary.models)) {
-        const modelData = await data.loadModel(modelId);
-        if (!modelData) continue;
+    const allModelIds = Object.keys(data.summary.models);
+    // Load all models in parallel for faster initial render
+    const modelResults = await Promise.all(allModelIds.map(id => data.loadModel(id)));
+    for (let i = 0; i < allModelIds.length; i++) {
+        const modelId = allModelIds[i];
+        const modelData = modelResults[i];
+        if (!modelData) {
+            console.warn(`Consistency map: skipping ${modelId} — data not loaded`);
+            continue;
+        }
         modelEntries.push({ id: modelId, label: modelData.label });
 
         for (const pr of modelData.probe_results) {

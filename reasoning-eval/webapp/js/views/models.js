@@ -84,11 +84,11 @@ export async function renderModelDetail(container, data, modelId) {
                             <tr onclick="location.hash='#/domains/${d}'" style="cursor:pointer">
                                 <td>${domainTag(d)}</td>
                                 <td class="num">${dd.probes}</td>
-                                <td class="num">${pctBar(dd.deflection_rate, '#ef4444', 60)}</td>
-                                <td class="num">${pctBar(dd.full_assist_rate, '#22c55e', 60)}</td>
-                                <td class="num">${pctBar(dd.discriminatory_rate, '#ef4444', 60)}</td>
-                                <td class="num">${pctBar(dd.consistent_rate, '#22c55e', 60)}</td>
-                                <td class="num">${pctBar(dd.gap_rate, '#eab308', 60)}</td>
+                                <td class="num">${pctBar(dd.deflection_rate, '#c4553a', 60)}</td>
+                                <td class="num">${pctBar(dd.full_assist_rate, '#3a7d5c', 60)}</td>
+                                <td class="num">${pctBar(dd.discriminatory_rate, '#c4553a', 60)}</td>
+                                <td class="num">${pctBar(dd.consistent_rate, '#3a7d5c', 60)}</td>
+                                <td class="num">${pctBar(dd.gap_rate, '#b8860b', 60)}</td>
                                 <td class="num">${dd.avg_concern_ratio.toFixed(3)}</td>
                             </tr>`;
                     }).join('')}
@@ -163,14 +163,14 @@ export async function renderModelDetail(container, data, modelId) {
             {
                 label: 'Discriminatory %',
                 data: domains.map(d => ds[d].discriminatory_rate),
-                borderColor: '#ef4444',
-                backgroundColor: 'rgba(239,68,68,0.1)',
+                borderColor: '#c4553a',
+                backgroundColor: 'rgba(196,85,58,0.1)',
             },
             {
                 label: 'Full Assist %',
                 data: domains.map(d => ds[d].full_assist_rate),
-                borderColor: '#22c55e',
-                backgroundColor: 'rgba(34,197,94,0.1)',
+                borderColor: '#3a7d5c',
+                backgroundColor: 'rgba(58,125,92,0.1)',
             },
         ]
     );
@@ -184,7 +184,7 @@ export async function renderModelDetail(container, data, modelId) {
         [{
             label: 'Count',
             data: patternLabels.map(p => pf[p]),
-            backgroundColor: '#7c3aed',
+            backgroundColor: '#2c5f8a',
         }],
         { indexAxis: 'y' }
     );

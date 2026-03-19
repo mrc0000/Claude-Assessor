@@ -1,17 +1,17 @@
 /**
- * Chart.js wrapper utilities.
+ * Chart.js wrapper utilities — editorial light theme.
  */
 
 const COLORS = {
-    red: '#ef4444',
-    green: '#22c55e',
-    yellow: '#eab308',
-    blue: '#3b82f6',
-    orange: '#f97316',
-    cyan: '#06b6d4',
-    purple: '#a855f7',
-    accent: '#7c3aed',
-    muted: '#8892b0',
+    red: '#c4553a',
+    green: '#3a7d5c',
+    yellow: '#b8860b',
+    blue: '#2c5f8a',
+    orange: '#c47e33',
+    cyan: '#2a7f9e',
+    purple: '#8b6daf',
+    accent: '#2c5f8a',
+    muted: '#7a7a7a',
 };
 
 const DOMAIN_COLORS = {
@@ -26,19 +26,19 @@ const DOMAIN_COLORS = {
 
 const VERDICT_COLORS = {
     discriminatory: COLORS.red,
-    tone_modulated_high: '#b45309',
+    tone_modulated_high: '#a0642a',
     tone_modulated_moderate: COLORS.orange,
-    tone_modulated_low: '#fde68a',
+    tone_modulated_low: '#d4a95a',
     tone_modulated: COLORS.orange,
     consistent: COLORS.green,
 };
 
-// Chart.js defaults for dark theme
+// Chart.js defaults for light editorial theme
 if (typeof Chart !== 'undefined') {
-    Chart.defaults.color = '#8892b0';
-    Chart.defaults.borderColor = '#2a2f3d';
-    Chart.defaults.font.family = "'SF Mono','Cascadia Code','Fira Code','JetBrains Mono',monospace";
-    Chart.defaults.font.size = 11;
+    Chart.defaults.color = '#7a7a7a';
+    Chart.defaults.borderColor = '#edeae5';
+    Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
+    Chart.defaults.font.size = 12;
 }
 
 export function createBarChart(canvas, labels, datasets, options = {}) {
@@ -57,7 +57,7 @@ export function createBarChart(canvas, labels, datasets, options = {}) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: '#1c2029' },
+                    grid: { color: '#edeae5' },
                 },
                 x: {
                     grid: { display: false },
@@ -76,7 +76,8 @@ export function createDoughnutChart(canvas, labels, data, colors) {
             datasets: [{
                 data,
                 backgroundColor: colors,
-                borderWidth: 0,
+                borderWidth: 2,
+                borderColor: '#ffffff',
             }],
         },
         options: {
@@ -85,7 +86,7 @@ export function createDoughnutChart(canvas, labels, data, colors) {
             plugins: {
                 legend: {
                     position: 'right',
-                    labels: { boxWidth: 10, padding: 8, font: { size: 10 } },
+                    labels: { boxWidth: 10, padding: 8, font: { size: 11 } },
                 },
             },
             cutout: '60%',
@@ -110,7 +111,7 @@ export function createHorizontalBarChart(canvas, labels, datasets, options = {})
             scales: {
                 x: {
                     beginAtZero: true,
-                    grid: { color: '#1c2029' },
+                    grid: { color: '#edeae5' },
                 },
                 y: {
                     grid: { display: false },
@@ -131,8 +132,8 @@ export function createRadarChart(canvas, labels, datasets) {
             scales: {
                 r: {
                     beginAtZero: true,
-                    grid: { color: '#1c2029' },
-                    pointLabels: { font: { size: 10 } },
+                    grid: { color: '#edeae5' },
+                    pointLabels: { font: { size: 11 } },
                     ticks: { display: false },
                 },
             },

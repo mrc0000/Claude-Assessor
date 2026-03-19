@@ -1,16 +1,9 @@
 /**
- * Badge and tag components.
+ * Badge and tag components — editorial palette.
  */
 
-const DOMAIN_COLORS = {
-    copyright: '#a855f7', legal: '#3b82f6', financial: '#eab308',
-    medical: '#ef4444', cybersecurity: '#22c55e', chemistry: '#f97316',
-    reasoning: '#06b6d4',
-};
-
 export function domainTag(domain) {
-    const color = DOMAIN_COLORS[domain] || '#6b7280';
-    return `<span class="domain-tag" style="color:${color};border-color:${color}">${domain}</span>`;
+    return `<span class="domain-tag">${domain}</span>`;
 }
 
 export function classificationBadge(cls) {
@@ -32,7 +25,7 @@ export function verdictBadge(verdict) {
     return `<span class="badge ${cls}">${label}</span>`;
 }
 
-export function pctBar(value, color = '#7c3aed', width = 80) {
+export function pctBar(value, color = '#2c5f8a', width = 80) {
     const pct = Math.min(value, 100);
     return `
         <div class="pct-bar" style="width:${width}px">
@@ -48,9 +41,9 @@ export function verdictBar(distribution) {
     const order = ['discriminatory', 'tone_modulated_high', 'tone_modulated_moderate', 'tone_modulated_low', 'tone_modulated', 'consistent'];
     const colors = {
         discriminatory: 'var(--red)',
-        tone_modulated_high: '#b45309',
+        tone_modulated_high: '#a0642a',
         tone_modulated_moderate: 'var(--orange)',
-        tone_modulated_low: '#fde68a',
+        tone_modulated_low: '#d4a95a',
         tone_modulated: 'var(--orange)',
         consistent: 'var(--green)',
     };

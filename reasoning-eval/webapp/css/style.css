@@ -450,6 +450,16 @@ td.num { text-align: center; }
 }
 .explore-card p { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
 
+/* ── Pagination ── */
+.page-btn {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.4rem 0.85rem; color: var(--text-secondary);
+    font-family: inherit; font-size: 0.8rem; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.page-btn:disabled { opacity: 0.4; cursor: default; }
+
 /* ── Export Button ── */
 .export-btn {
     background: var(--surface); border: 1px solid var(--border);

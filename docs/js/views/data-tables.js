@@ -1,10 +1,11 @@
 /**
- * Data tables view — sortable, filterable, exportable.
+ * Data tables view — sortable, filterable, paginated, exportable.
  */
-import { domainTag, verdictBadge, pctBar } from '../components/badge.js';
+import { domainTag, verdictBadge } from '../components/badge.js';
+
+const PAGE_SIZE = 50;
 
 export async function renderDataTables(container, data) {
-    // Load all probe results across all models
     const allProbes = [];
     for (const modelId of Object.keys(data.summary.models)) {
         const modelData = await data.loadModel(modelId);
@@ -32,6 +33,7 @@ export async function renderDataTables(container, data) {
     let sortCol = 'probe_id';
     let sortDir = 1;
     let filters = { model: '', domain: '', verdict: '', search: '' };
+    let page = 0;
 
     function getFiltered() {
         return allProbes.filter(p =>
@@ -48,24 +50,43 @@ export async function renderDataTables(container, data) {
 
     function renderTable() {
         const filtered = getFiltered();
+        const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+        if (page >= totalPages) page = Math.max(0, totalPages - 1);
+        const start = page * PAGE_SIZE;
+        const pageData = filtered.slice(start, start + PAGE_SIZE);
+
         const tbody = document.getElementById('data-tbody');
-        tbody.innerHTML = filtered.map(p => `
+        tbody.innerHTML = pageData.map(p => `
             <tr onclick="location.hash='#/probes/${p.probe_id}'" style="cursor:pointer">
-                <td><code>${p.probe_id}</code></td>
-                <td style="font-size:0.75rem">${p.model}</td>
+                <td><code style="font-size:0.78rem">${p.probe_id}</code></td>
+                <td style="font-size:0.78rem">${p.model}</td>
                 <td class="num">${p.run}</td>
                 <td>${domainTag(p.domain)}</td>
-                <td style="font-size:0.75rem">${p.risk_tier}</td>
                 <td><span class="badge ${clsBadge(p.classification)}">${p.classification.replace(/_/g, ' ')}</span></td>
-                <td class="num">${p.concern_ratio.toFixed(2)}</td>
                 <td>${verdictBadge(p.verdict)}</td>
                 <td class="num">${p.framing_sensitivity}</td>
-                <td style="font-size:0.75rem">${p.behavioral_shift}</td>
-                <td class="num">${p.gap_confirmed === 'Yes' ? '⚠' : ''}</td>
+                <td class="num">${p.gap_confirmed === 'Yes' ? 'Yes' : ''}</td>
             </tr>
         `).join('');
 
-        document.getElementById('data-count').textContent = `${filtered.length} of ${allProbes.length} results`;
+        document.getElementById('data-count').textContent =
+            `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} of ${filtered.length} results`;
+
+        // Pagination controls
+        document.getElementById('pagination').innerHTML = totalPages > 1 ? `
+            <button class="page-btn" ${page === 0 ? 'disabled' : ''} data-page="${page - 1}">&larr; Prev</button>
+            <span style="font-size:0.8rem;color:var(--muted)">Page ${page + 1} of ${totalPages}</span>
+            <button class="page-btn" ${page >= totalPages - 1 ? 'disabled' : ''} data-page="${page + 1}">Next &rarr;</button>
+        ` : '';
+
+        // Rebind pagination
+        document.querySelectorAll('.page-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                page = parseInt(btn.dataset.page);
+                renderTable();
+                document.getElementById('data-table-top').scrollIntoView({ behavior: 'smooth' });
+            });
+        });
     }
 
     const models = [...new Set(allProbes.map(p => p.model))].sort();
@@ -74,29 +95,30 @@ export async function renderDataTables(container, data) {
 
     container.innerHTML = `
         <h2 class="section-header">Data Explorer</h2>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-            <span id="data-count" style="font-size:0.75rem;color:var(--muted)"></span>
-            <button class="export-btn" id="export-csv">Export CSV</button>
-        </div>
-        <div class="filter-bar">
+        <p class="section-subheader">
+            All ${allProbes.length} evaluation results across every model, domain, and variance run.
+            Filter, sort by any column, or export to CSV.
+        </p>
+
+        <div class="filter-bar" style="flex-wrap:wrap">
             <label>
                 Model
                 <select id="filter-model">
-                    <option value="">All</option>
+                    <option value="">All models</option>
                     ${models.map(m => `<option value="${m}">${m}</option>`).join('')}
                 </select>
             </label>
             <label>
                 Domain
                 <select id="filter-domain">
-                    <option value="">All</option>
+                    <option value="">All domains</option>
                     ${domains.map(d => `<option value="${d}">${d}</option>`).join('')}
                 </select>
             </label>
             <label>
                 Verdict
                 <select id="filter-verdict">
-                    <option value="">All</option>
+                    <option value="">All verdicts</option>
                     ${verdicts.map(v => `<option value="${v}">${v.replace(/_/g, ' ')}</option>`).join('')}
                 </select>
             </label>
@@ -104,7 +126,16 @@ export async function renderDataTables(container, data) {
                 Search
                 <input type="text" id="filter-search" placeholder="Probe ID...">
             </label>
+            <div style="display:flex;align-items:flex-end;margin-left:auto">
+                <button class="export-btn" id="export-csv">Export CSV</button>
+            </div>
         </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem" id="data-table-top">
+            <span id="data-count" style="font-size:0.8rem;color:var(--muted)"></span>
+            <div id="pagination" style="display:flex;align-items:center;gap:0.75rem"></div>
+        </div>
+
         <div style="overflow-x:auto">
             <table>
                 <thead>
@@ -113,17 +144,19 @@ export async function renderDataTables(container, data) {
                         <th data-col="model">Model</th>
                         <th data-col="run" class="num">Run</th>
                         <th data-col="domain">Domain</th>
-                        <th data-col="risk_tier">Risk</th>
-                        <th data-col="classification">Class.</th>
-                        <th data-col="concern_ratio" class="num" title="Concern Ratio: disclaimer density">Concern</th>
+                        <th data-col="classification">Classification</th>
                         <th data-col="verdict">Verdict</th>
-                        <th data-col="framing_sensitivity" class="num" title="Framing Sensitivity (0–6)">Framing</th>
-                        <th data-col="behavioral_shift">Shift</th>
-                        <th data-col="gap_confirmed" class="num">Gap</th>
+                        <th data-col="framing_sensitivity" class="num" title="Framing Sensitivity: how much the response changed across framings (0–6)">Framing</th>
+                        <th data-col="gap_confirmed" class="num" title="Capability gap: model claimed inability but demonstrated knowledge">Gap</th>
                     </tr>
                 </thead>
                 <tbody id="data-tbody"></tbody>
             </table>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem">
+            <span></span>
+            <div id="pagination-bottom" style="display:flex;align-items:center;gap:0.75rem"></div>
         </div>
     `;
 
@@ -135,6 +168,7 @@ export async function renderDataTables(container, data) {
             else { sortCol = col; sortDir = 1; }
             container.querySelectorAll('th').forEach(t => t.classList.remove('sort-asc', 'sort-desc'));
             th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+            page = 0;
             renderTable();
         });
     });
@@ -143,11 +177,13 @@ export async function renderDataTables(container, data) {
     ['model', 'domain', 'verdict'].forEach(key => {
         document.getElementById(`filter-${key}`).addEventListener('change', e => {
             filters[key] = e.target.value;
+            page = 0;
             renderTable();
         });
     });
     document.getElementById('filter-search').addEventListener('input', e => {
         filters.search = e.target.value;
+        page = 0;
         renderTable();
     });
 

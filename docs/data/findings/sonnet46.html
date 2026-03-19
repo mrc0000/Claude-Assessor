@@ -1,0 +1,288 @@
+<h1 id="sonnet-46-reasoning-honesty-evaluation-findings">Sonnet 4.6 Reasoning Honesty Evaluation — Findings</h1>
+<p><strong>Model</strong>: <code>claude-sonnet-4-6</code><br />
+<strong>Date</strong>: 2026-03-07<br />
+<strong>Eval config</strong>: v1.6.0 (differential thresholds: <code>negligible_max=2</code>)<br />
+<strong>Classification</strong>: LLM (Haiku 4.5 classifier)<br />
+<strong>Protocol</strong>: 3 variance runs per suite, concurrent workers, full differential + capability gap testing</p>
+<h2 id="abstract">Abstract</h2>
+<p>Claude Sonnet 4.6 was evaluated across 52 probes in 7 domains (156 total probe runs) using the Claude-Assessor reasoning honesty framework. The model shows a dramatic reduction in outright deflection compared to earlier Claude models — 1.9% deflection, driven entirely by infrastructure-level content filtering on copyright probes. No domain-level model refusal occurs.</p>
+<p>Under calibrated thresholds (v1.6), 68.2% of differential tests produce consistent verdicts — the model gives substantively equivalent responses regardless of framing in most cases. However, 13.5% of differentials are discriminatory (the model changes what it will do based on framing), and 18.2% show measurable tone modulation above the noise floor. Discrimination concentrates in cybersecurity (22.2%), reasoning (22.2%), and legal (20.8%).</p>
+<hr />
+<h2 id="headline-numbers">Headline Numbers</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total probe runs</td>
+<td>156</td>
+</tr>
+<tr>
+<td>Deflection rate</td>
+<td>1.9%</td>
+</tr>
+<tr>
+<td>Full assist rate</td>
+<td>88.5%</td>
+</tr>
+<tr>
+<td>Discriminatory differentials</td>
+<td>13.5%</td>
+</tr>
+<tr>
+<td>Tone-modulated differentials</td>
+<td>18.2%</td>
+</tr>
+<tr>
+<td>Consistent differentials</td>
+<td>68.2%</td>
+</tr>
+<tr>
+<td>Capability gaps confirmed</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Avg concern ratio</td>
+<td>0.034</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="domain-breakdown">Domain Breakdown</h2>
+<p>Each domain's probe count reflects both the general-suite probes (tagged by domain) and the domain-specific deep suite, aggregated across 3 variance runs. Some domains have fewer differentials due to content filter blocks or empty responses.</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Probes</th>
+<th>Diff.</th>
+<th>Deflect</th>
+<th>Full Assist</th>
+<th>Discrim.</th>
+<th>Tone Mod.</th>
+<th>Consistent</th>
+<th>Gaps</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chemistry</td>
+<td>27</td>
+<td>24</td>
+<td>0.0%</td>
+<td>88.9%</td>
+<td>0.0%</td>
+<td>0.0%</td>
+<td>100.0%</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Cybersecurity</td>
+<td>27</td>
+<td>27</td>
+<td>0.0%</td>
+<td>100.0%</td>
+<td>22.2%</td>
+<td>0.0%</td>
+<td>77.8%</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Financial</td>
+<td>21</td>
+<td>21</td>
+<td>0.0%</td>
+<td>100.0%</td>
+<td>4.8%</td>
+<td>28.6%</td>
+<td>66.7%</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Legal</td>
+<td>24</td>
+<td>24</td>
+<td>0.0%</td>
+<td>91.7%</td>
+<td>20.8%</td>
+<td>29.2%</td>
+<td>50.0%</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Medical</td>
+<td>24</td>
+<td>21</td>
+<td>0.0%</td>
+<td>87.5%</td>
+<td>9.5%</td>
+<td>4.8%</td>
+<td>85.7%</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Copyright</td>
+<td>15</td>
+<td>13</td>
+<td>20.0%</td>
+<td>66.7%</td>
+<td>15.4%</td>
+<td>7.7%</td>
+<td>76.9%</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Reasoning</td>
+<td>18</td>
+<td>18</td>
+<td>0.0%</td>
+<td>72.2%</td>
+<td>22.2%</td>
+<td>66.7%</td>
+<td>11.1%</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<p><em>Copyright deflection is infrastructure-level content filtering, not model-level refusal.</em></p>
+<hr />
+<h2 id="key-observations">Key Observations</h2>
+<h3 id="1-helpfulness-without-consistency-in-sensitive-domains">1. Helpfulness Without Consistency in Sensitive Domains</h3>
+<p>Sonnet 4.6 almost never refuses. Across 156 probe runs, only 3 outright deflections occurred — all from content filter infrastructure. Every other domain shows 0% deflection, and full assist is 88.5% overall.</p>
+<p>But helpfulness and consistency are independent axes. The model answers nearly everything but adjusts <em>how</em> it answers in specific domains. Legal (50.0% consistent), reasoning (11.1% consistent), and financial (66.7% consistent) show the most framing-dependent behavior. Chemistry (100% consistent) and medical (85.7% consistent) are the cleanest.</p>
+<h3 id="2-cybersecurity-credential-injection-still-works">2. Cybersecurity: Credential Injection Still Works</h3>
+<p>The cyber-insider suite tests whether claiming Anthropic affiliation changes model behavior. Despite answering all probes fully (100% full assist), 22.2% of cybersecurity differentials are discriminatory. The model gives everyone an answer — but not the <em>same</em> answer.</p>
+<p>Without a control test using fictional company names, we cannot determine whether this is Anthropic-specific or a general response to any organizational credential claim.</p>
+<h3 id="3-reasoning-honesty-the-model-cant-practice-what-it-preaches">3. Reasoning Honesty: The Model Can't Practice What It Preaches</h3>
+<p>The reasoning-honesty suite produces Sonnet 4.6's weakest results:<br />
+- 72.2% full assist — the <em>lowest</em> of any domain<br />
+- 22.2% discriminatory — tied for highest<br />
+- 11.1% consistent — the <em>lowest</em> of any domain<br />
+- 4 capability gaps — the <em>highest</em> of any domain</p>
+<p>The model can articulate principles of epistemic honesty but fails to apply them consistently when tested. When asked to examine its own limitations, it demonstrates the same patterns it would flag in others: hedging that increases without adding information, justifications that shift under pressure, and capability gaps where it claims uncertainty about things it demonstrably knows.</p>
+<h3 id="4-legal-domain-helpful-but-discriminatory">4. Legal Domain: Helpful but Discriminatory</h3>
+<p>Legal shows the sharpest trade-off between helpfulness and consistency. At 91.7% full assist, it answers nearly everything — but 20.8% of differentials are discriminatory, meaning the model changes what it will do based on framing. The 2 confirmed capability gaps are in legal, suggesting the model still harbors caution about legal content that manifests as claimed inability.</p>
+<h3 id="5-chemistry-and-medical-clean-domains">5. Chemistry and Medical: Clean Domains</h3>
+<p>Chemistry (100% consistent, 0% discriminatory) is the cleanest domain — the model answers everything identically regardless of framing. Medical is nearly as clean (85.7% consistent, 9.5% discriminatory). These domains have the least perceived liability surface.</p>
+<h3 id="6-content-filtering-as-infrastructure-opacity">6. Content Filtering as Infrastructure Opacity</h3>
+<p>Copyright probe <code>copyright-1a</code> is consistently blocked by API-level content filters — not model-level refusal. This is identical across Haiku 4.5, Sonnet 4, and Sonnet 4.6, confirming it's infrastructure, not model-specific.</p>
+<hr />
+<h2 id="behavioral-patterns-detected">Behavioral Patterns Detected</h2>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Occurrences</th>
+<th>Domains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Concern Front-Loading</td>
+<td>5</td>
+<td>reasoning</td>
+</tr>
+<tr>
+<td>Liability Laundering</td>
+<td>6</td>
+<td>copyright, legal, reasoning</td>
+</tr>
+<tr>
+<td>Scope Narrowing</td>
+<td>4</td>
+<td>copyright, legal</td>
+</tr>
+<tr>
+<td>Volunteered Alternative</td>
+<td>3</td>
+<td>copyright, reasoning</td>
+</tr>
+<tr>
+<td>Complexity Inflation</td>
+<td>2</td>
+<td>legal</td>
+</tr>
+<tr>
+<td>False Balance Pivot</td>
+<td>2</td>
+<td>reasoning</td>
+</tr>
+<tr>
+<td>Competence Deflection</td>
+<td>1</td>
+<td>reasoning</td>
+</tr>
+</tbody>
+</table>
+<p>23 total pattern matches — dramatically lower than Haiku 4.5 (79) and Sonnet 4 (54). The reasoning domain concentrates the most patterns, consistent with its role as the domain where the model struggles most with self-assessment.</p>
+<hr />
+<h2 id="comparison-with-other-models">Comparison with Other Models</h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Sonnet 4</th>
+<th>Haiku 4.5</th>
+<th>Sonnet 4.6</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deflection</td>
+<td>1.9%</td>
+<td>3.8%</td>
+<td>1.9%</td>
+</tr>
+<tr>
+<td>Full assist</td>
+<td>82.1%</td>
+<td>75.6%</td>
+<td>88.5%</td>
+</tr>
+<tr>
+<td>Discriminatory</td>
+<td>9.0%</td>
+<td>18.2%</td>
+<td>13.5%</td>
+</tr>
+<tr>
+<td>Tone modulated</td>
+<td>9.0%</td>
+<td>17.5%</td>
+<td>18.2%</td>
+</tr>
+<tr>
+<td>Consistent</td>
+<td>82.1%</td>
+<td>64.3%</td>
+<td>68.2%</td>
+</tr>
+<tr>
+<td>Capability gaps</td>
+<td>22</td>
+<td>16</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<p>Sonnet 4.6 is the most helpful model (88.5% full assist) with the fewest capability gaps (6). Its discriminatory rate (13.5%) falls between Sonnet 4's low (9.0%) and Haiku's high (18.2%). Sonnet 4 has the highest consistency (82.1%) — it restricts everyone equally rather than differentiating by framing.</p>
+<hr />
+<h2 id="implications">Implications</h2>
+<ol>
+<li>
+<p><strong>Helpfulness and consistency are independent axes.</strong> Sonnet 4.6 is highly helpful (88.5% full assist) and moderately consistent (68.2%). The model answers most questions equivalently, but adjusts its approach in sensitive domains.</p>
+</li>
+<li>
+<p><strong>Single-response testing misses the behavioral profile.</strong> Standard benchmarks would rate Sonnet 4.6 highly — low refusal, high helpfulness. The differential protocol reveals domain-specific framing sensitivity that single-response evaluation cannot detect.</p>
+</li>
+<li>
+<p><strong>Credential-framing sensitivity persists.</strong> The model produces measurably different responses when credential claims are present, especially Anthropic-related ones.</p>
+</li>
+<li>
+<p><strong>Meta-cognitive probes are the most revealing.</strong> The reasoning-honesty suite produces the most concerning findings because it tests whether the model's stated principles align with its behavior. The gap between articulated values and demonstrated behavior is the strongest signal.</p>
+</li>
+</ol>

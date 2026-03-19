@@ -56,6 +56,15 @@ export async function renderFindings(container, data, docId) {
         const html = await loadFinding(doc.file);
         contentEl.innerHTML = html;
 
+        // Wrap bare tables in scroll container for overflow prevention
+        contentEl.querySelectorAll('table').forEach(tbl => {
+            if (tbl.parentElement.classList.contains('table-wrap')) return;
+            const wrap = document.createElement('div');
+            wrap.className = 'table-wrap';
+            tbl.parentNode.insertBefore(wrap, tbl);
+            wrap.appendChild(tbl);
+        });
+
         // Update hash without re-rendering
         history.replaceState(null, '', `#/findings/${id}`);
     }

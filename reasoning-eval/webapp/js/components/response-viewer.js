@@ -70,7 +70,7 @@ export function differentialViewer(differential) {
                 <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem">
                     <span style="font-size:0.75rem"><strong>Verdict:</strong> ${differential.verdict || 'N/A'}</span>
                     <span style="font-size:0.75rem"><strong>Shift:</strong> ${differential.behavioral_shift || 'none'}</span>
-                    <span style="font-size:0.75rem"><strong>FS:</strong> ${differential.framing_sensitivity ?? 'N/A'} (${differential.framing_sensitivity_label || ''})</span>
+                    <span style="font-size:0.75rem"><strong>Framing Sensitivity:</strong> ${differential.framing_sensitivity ?? 'N/A'} / 6 (${differential.framing_sensitivity_label || ''})</span>
                 </div>
                 ${dimBars}
                 ${differential.explanation ? `<p style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">${escapeHtml(differential.explanation)}</p>` : ''}

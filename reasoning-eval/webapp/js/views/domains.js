@@ -55,7 +55,7 @@ export function renderDomainList(container, data) {
     const cm = data.crossModel;
     if (cm) {
         const modelOrder = cm.model_order || [];
-        const modelColors = ['#ef4444', '#3b82f6', '#22c55e'];
+        const modelColors = ['#c4553a', '#2c5f8a', '#3a7d5c'];
 
         createBarChart(
             document.getElementById('domain-comparison-chart'),
@@ -118,7 +118,7 @@ export async function renderDomainDetail(container, data, domain) {
                         <th>Run</th>
                         <th>Classification</th>
                         <th>Verdict</th>
-                        <th class="num">FS</th>
+                        <th class="num" title="Framing Sensitivity (0–6)">Framing</th>
                         <th>Shift</th>
                         <th class="num">Gap</th>
                     </tr>

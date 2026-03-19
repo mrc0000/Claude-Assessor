@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reasoning Honesty Evaluation — Research Findings Explorer</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<nav class="nav" id="main-nav">
+    <a href="#/" class="nav-brand">Claude-Assessor</a>
+    <div class="nav-links">
+        <a href="#/" data-view="landing">Overview</a>
+        <a href="#/models" data-view="models">Models</a>
+        <a href="#/domains" data-view="domains">Domains</a>
+        <a href="#/probes" data-view="probes">Probes</a>
+        <a href="#/map" data-view="map">Map</a>
+        <a href="#/findings" data-view="findings">Findings</a>
+        <a href="#/methodology" data-view="methodology">Methodology</a>
+        <a href="#/data" data-view="data-tables">Data</a>
+    </div>
+</nav>
+
+<div id="app" class="container">
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading evaluation data...</p>
+    </div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

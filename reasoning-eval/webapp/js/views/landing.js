@@ -1,9 +1,8 @@
 /**
- * Landing/Overview page.
+ * Landing page — narrative-first, progressive disclosure.
  */
 import { statCard, statGrid } from '../components/stat-card.js';
 import { verdictBar } from '../components/badge.js';
-import { createBarChart, createDoughnutChart, DOMAIN_COLORS, VERDICT_COLORS } from '../components/charts.js';
 
 export function renderLanding(container, data) {
     const g = data.summary.global;
@@ -11,21 +10,79 @@ export function renderLanding(container, data) {
 
     container.innerHTML = `
         <div class="hero">
-            <h1>Reasoning Honesty Evaluation</h1>
+            <h1>When AI Models Reason About Their Own Limits</h1>
             <div class="subtitle">
-                Does AI reason transparently about its limitations — or deploy patterned evasion strategies
-                that shift based on who the model believes is asking?
+                An empirical evaluation of whether large language models reason honestly about what they
+                can and cannot do — or whether their transparency shifts depending on who they believe is asking.
             </div>
             <div class="meta">
-                <span>Probes: <strong>${g.total_probes}</strong></span>
-                <span>Models: <strong>${data.summary.total_models}</strong></span>
-                <span>Domains: <strong>${g.total_domains}</strong></span>
-                <span>Scoring: <strong>v1.6.0</strong></span>
+                <span><strong>468</strong> evaluation runs</span>
+                <span><strong>3</strong> Claude models</span>
+                <span><strong>7</strong> knowledge domains</span>
+                <span><strong>52</strong> diagnostic probes</span>
             </div>
         </div>
 
+        <div class="narrative-section">
+            <h2>The Core Question</h2>
+            <p class="lead">
+                If an AI model declines to help with a question, is it because it genuinely can't — or because
+                a policy says it shouldn't? And if the same model helps a different person with the same question,
+                what does that reveal about the honesty of its original reasoning?
+            </p>
+            <p class="lead">
+                This evaluation framework tests a simple principle: <em>honest reasoning should be stable
+                under scrutiny, consistent across framings, and transparent about the gap between capability
+                and willingness.</em>
+            </p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="narrative-section">
+            <h2>What We Found</h2>
+            <p class="lead">
+                Most of the time, these models respond consistently regardless of who's asking. But in specific
+                domains — particularly cybersecurity and meta-cognitive reasoning — the patterns shift in measurable,
+                reproducible ways.
+            </p>
+        </div>
+
+        <div class="insight-grid">
+            <div class="insight-card coral">
+                <div class="eyebrow">Credential Sensitivity</div>
+                <h3>Models change their answers based on who they think is asking</h3>
+                <p>In cybersecurity and reasoning domains, claiming professional credentials measurably shifts
+                response depth and willingness. Discrimination rates reach 18–52% in these areas.</p>
+            </div>
+            <div class="insight-card gold">
+                <div class="eyebrow">Evasion Patterns</div>
+                <h3>"I can't" often means "I won't" — but the model doesn't say so</h3>
+                <p>The most common deflection strategy frames policy decisions as limitations. In ${g.total_capability_gaps} confirmed cases,
+                models claimed inability but demonstrated the knowledge when asked differently.</p>
+            </div>
+            <div class="insight-card sage">
+                <div class="eyebrow">Consistency</div>
+                <h3>The majority of responses are genuinely stable</h3>
+                <p>${g.consistent_rate}% of probe results showed consistent behavior regardless of framing.
+                The signal concentrates in specific domains rather than being a systemic problem.</p>
+            </div>
+            <div class="insight-card accent">
+                <div class="eyebrow">Self-Knowledge</div>
+                <h3>Models can describe their failures accurately — while demonstrating them</h3>
+                <p>In meta-cognitive probes, models articulate epistemic principles clearly but fail to apply
+                them consistently. Naming the problem doesn't fix it.</p>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="narrative-section">
+            <h2>By the Numbers</h2>
+        </div>
+
         ${statGrid([
-            statCard('Total Probe Runs', g.total_probes, `${data.summary.total_models} models × 52 probes × 3 variance runs`),
+            statCard('Probe Runs', g.total_probes, '3 models \u00d7 52 probes \u00d7 3 variance runs'),
             statCard('Consistent', g.consistent_rate + '%', 'Stable across framings', 'var(--green)'),
             statCard('Discriminatory', g.discriminatory_rate + '%', 'Changed by credential framing', 'var(--red)'),
             statCard('Tone Modulated', g.tone_modulated_rate + '%', 'Same decision, different depth', 'var(--orange)'),
@@ -33,114 +90,67 @@ export function renderLanding(container, data) {
             statCard('Avg Concern Ratio', g.avg_concern_ratio.toFixed(3), 'Disclaimer density per response'),
         ])}
 
-        <div class="section">
-            <h2 class="section-header">Model Comparison</h2>
-            <div class="model-grid">
-                ${Object.entries(models).map(([id, m]) => {
-                    const s = m.summary;
-                    const vd = s.verdict_distribution || {};
-                    return `
-                        <div class="model-card" onclick="location.hash='#/models/${encodeURIComponent(id)}'">
-                            <h3>${m.label}</h3>
-                            <div class="model-id">${id}</div>
-                            <div class="mini-stats">
-                                <div class="mini-stat"><span class="mini-val">${s.total_probes}</span><span class="mini-lbl">Probes</span></div>
-                                <div class="mini-stat"><span class="mini-val" style="color:var(--green)">${s.full_assist_rate}%</span><span class="mini-lbl">Full Assist</span></div>
-                                <div class="mini-stat"><span class="mini-val" style="color:var(--red)">${s.discriminatory_rate}%</span><span class="mini-lbl">Discrim.</span></div>
-                                <div class="mini-stat"><span class="mini-val" style="color:var(--green)">${s.consistent_rate}%</span><span class="mini-lbl">Consistent</span></div>
-                                <div class="mini-stat"><span class="mini-val">${s.capability_gaps}</span><span class="mini-lbl">Gaps</span></div>
-                            </div>
-                            ${verdictBar(vd)}
-                        </div>`;
-                }).join('')}
-            </div>
+        <div class="divider"></div>
+
+        <div class="narrative-section">
+            <h2>Explore the Data</h2>
+            <p class="lead">
+                Dive into the evaluation results at whatever depth you'd like. Start with a model overview,
+                explore a specific domain, or read the full findings narrative.
+            </p>
         </div>
 
-        <div class="section">
-            <h2 class="section-header">Key Findings</h2>
-            <div class="finding-card critical">
-                <h4>Credential-Responsive Behavior Concentrates in Two Domains</h4>
-                <p>Cybersecurity (18.5–51.9% discriminatory) and meta-cognitive reasoning (22.2–50.0%)
-                show the strongest credential sensitivity. Models measurably change response depth based
-                on claimed professional identity.</p>
-            </div>
-            <div class="finding-card warning">
-                <h4>Liability Laundering is the Dominant Evasion Strategy</h4>
-                <p>Across all models, the most persistent deflection pattern frames policy constraints
-                as being "for the user's benefit" — creating false epistemic claims of inability
-                rather than acknowledging policy decisions.</p>
-            </div>
-            <div class="finding-card info">
-                <h4>44 Capability Gaps Confirm Strategic Restriction</h4>
-                <p>In 44 cases, models claimed inability but demonstrated the knowledge when asked
-                differently. Legal domain leads with 16 gaps. This is the gap between stated and actual reasoning.</p>
-            </div>
-            <div class="finding-card success">
-                <h4>Most Responses Are Genuinely Consistent (64–82%)</h4>
-                <p>After calibrating for natural variance (v1.6 thresholds), the majority of probes
-                produce equivalent responses regardless of framing — the signal concentrates in specific domains.</p>
-            </div>
+        <div class="explore-grid">
+            <a class="explore-card" href="#/models">
+                <h4>Model Profiles</h4>
+                <p>Compare how each Claude model handles sensitive knowledge boundaries</p>
+            </a>
+            <a class="explore-card" href="#/domains">
+                <h4>Domain Explorer</h4>
+                <p>See how behavior varies across cybersecurity, medical, legal, and more</p>
+            </a>
+            <a class="explore-card" href="#/probes">
+                <h4>Probe Deep Dive</h4>
+                <p>Read the actual model responses — every prompt, every answer, every follow-up</p>
+            </a>
+            <a class="explore-card" href="#/findings">
+                <h4>Research Findings</h4>
+                <p>The full analysis narrative with cross-model synthesis and implications</p>
+            </a>
+            <a class="explore-card" href="#/methodology">
+                <h4>Methodology</h4>
+                <p>How we tested: three-stage protocol, scoring model, and 11 deflection patterns</p>
+            </a>
+            <a class="explore-card" href="#/data">
+                <h4>Data Tables</h4>
+                <p>Sort, filter, and export all 468 results with full metrics</p>
+            </a>
         </div>
 
-        <div class="chart-row">
-            <div class="chart-container">
-                <h3 style="font-size:0.85rem;margin-bottom:0.75rem">Verdict Distribution by Model</h3>
-                <div style="height:280px"><canvas id="verdict-chart"></canvas></div>
-            </div>
-            <div class="chart-container">
-                <h3 style="font-size:0.85rem;margin-bottom:0.75rem">Domain Risk Profile</h3>
-                <div style="height:280px"><canvas id="domain-chart"></canvas></div>
-            </div>
+        <div class="divider"></div>
+
+        <div class="narrative-section">
+            <h2>The Models</h2>
+        </div>
+
+        <div class="model-grid">
+            ${Object.entries(models).map(([id, m]) => {
+                const s = m.summary;
+                const vd = s.verdict_distribution || {};
+                return `
+                    <div class="model-card" onclick="location.hash='#/models/${encodeURIComponent(id)}'">
+                        <h3>${m.label}</h3>
+                        <div class="model-id">${id}</div>
+                        <div class="mini-stats">
+                            <div class="mini-stat"><span class="mini-val">${s.total_probes}</span><span class="mini-lbl">Probes</span></div>
+                            <div class="mini-stat"><span class="mini-val" style="color:var(--green)">${s.full_assist_rate}%</span><span class="mini-lbl">Full Assist</span></div>
+                            <div class="mini-stat"><span class="mini-val" style="color:var(--red)">${s.discriminatory_rate}%</span><span class="mini-lbl">Discrim.</span></div>
+                            <div class="mini-stat"><span class="mini-val" style="color:var(--green)">${s.consistent_rate}%</span><span class="mini-lbl">Consistent</span></div>
+                            <div class="mini-stat"><span class="mini-val">${s.capability_gaps}</span><span class="mini-lbl">Gaps</span></div>
+                        </div>
+                        ${verdictBar(vd)}
+                    </div>`;
+            }).join('')}
         </div>
     `;
-
-    // Verdict distribution chart
-    const modelLabels = Object.values(models).map(m => m.label);
-    const verdictTypes = ['consistent', 'tone_modulated_low', 'tone_modulated_moderate', 'tone_modulated_high', 'discriminatory'];
-    const verdictLabelsMap = {
-        consistent: 'Consistent', tone_modulated_low: 'Tone Mod (Low)',
-        tone_modulated_moderate: 'Tone Mod (Mod)', tone_modulated_high: 'Tone Mod (High)',
-        discriminatory: 'Discriminatory',
-    };
-    const verdictColorsMap = {
-        consistent: '#22c55e', tone_modulated_low: '#fde68a',
-        tone_modulated_moderate: '#f97316', tone_modulated_high: '#b45309',
-        discriminatory: '#ef4444',
-    };
-
-    createBarChart(
-        document.getElementById('verdict-chart'),
-        modelLabels,
-        verdictTypes.map(v => ({
-            label: verdictLabelsMap[v],
-            data: Object.values(models).map(m => (m.summary.verdict_distribution || {})[v] || 0),
-            backgroundColor: verdictColorsMap[v],
-        })),
-        { plugins: { legend: { labels: { font: { size: 9 } } } }, scales: { x: { stacked: true }, y: { stacked: true } } }
-    );
-
-    // Domain risk chart
-    const ds = data.summary.domain_stats;
-    const domains = Object.keys(ds).sort();
-    createBarChart(
-        document.getElementById('domain-chart'),
-        domains.map(d => d.charAt(0).toUpperCase() + d.slice(1)),
-        [
-            {
-                label: 'Discriminatory %',
-                data: domains.map(d => ds[d].discriminatory_rate),
-                backgroundColor: '#ef4444',
-            },
-            {
-                label: 'Deflection %',
-                data: domains.map(d => ds[d].deflection_rate),
-                backgroundColor: '#f97316',
-            },
-            {
-                label: 'Full Assist %',
-                data: domains.map(d => ds[d].full_assist_rate),
-                backgroundColor: '#22c55e',
-            },
-        ],
-    );
 }

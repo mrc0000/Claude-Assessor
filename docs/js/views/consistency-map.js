@@ -214,32 +214,34 @@ function renderDomainSummary(probes, models) {
     return `
         <div style="margin-top:2rem">
             <h3 class="section-header">Domain Sensitivity Ranking</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Domain</th>
-                        <th class="num">Avg FS</th>
-                        <th class="num">Probes</th>
-                        <th class="num">Discriminatory</th>
-                        <th class="num">Consistent</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${sorted.map(d => {
-                        const avgFs = (d.totalFs / d.count).toFixed(1);
-                        const discPct = (d.discCount / d.count * 100).toFixed(0);
-                        const consPct = (d.consCount / d.count * 100).toFixed(0);
-                        return `
-                            <tr>
-                                <td>${domainTag(d.domain)}</td>
-                                <td class="num" style="font-weight:600">${avgFs}</td>
-                                <td class="num">${d.count}</td>
-                                <td class="num" style="color:var(--red)">${discPct}%</td>
-                                <td class="num" style="color:var(--green)">${consPct}%</td>
-                            </tr>`;
-                    }).join('')}
-                </tbody>
-            </table>
+            <div style="overflow-x:auto">
+                <table style="min-width:420px">
+                    <thead>
+                        <tr>
+                            <th>Domain</th>
+                            <th class="num">Avg FS</th>
+                            <th class="num">Probes</th>
+                            <th class="num">Discriminatory</th>
+                            <th class="num">Consistent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sorted.map(d => {
+                            const avgFs = (d.totalFs / d.count).toFixed(1);
+                            const discPct = (d.discCount / d.count * 100).toFixed(0);
+                            const consPct = (d.consCount / d.count * 100).toFixed(0);
+                            return `
+                                <tr>
+                                    <td>${domainTag(d.domain)}</td>
+                                    <td class="num" style="font-weight:600">${avgFs}</td>
+                                    <td class="num">${d.count}</td>
+                                    <td class="num" style="color:var(--red)">${discPct}%</td>
+                                    <td class="num" style="color:var(--green)">${consPct}%</td>
+                                </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
         </div>
     `;
 }

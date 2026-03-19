@@ -219,6 +219,25 @@ python-dotenv      # .env file loading
 
 Set `ANTHROPIC_API_KEY` in `reasoning-eval/.env` or as an environment variable.
 
+## Citation
+
+If you use Claude-Assessor in your research, please cite:
+
+```bibtex
+@software{claude_assessor_2026,
+  title   = {Claude-Assessor: Reasoning Honesty Evaluation Framework},
+  author  = {Chapman, Michael R.},
+  year    = {2026},
+  url     = {https://github.com/mrc0000/Claude-Assessor},
+  version = {1.6.0},
+  license = {MIT}
+}
+```
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
 ## Companion Work
 
 - *Sociolinguistic Probing as a Honesty Audit Framework for Deployed LLMs* (2026)

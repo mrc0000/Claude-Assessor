@@ -115,9 +115,9 @@ export async function renderDataTables(container, data) {
                         <th data-col="domain">Domain</th>
                         <th data-col="risk_tier">Risk</th>
                         <th data-col="classification">Class.</th>
-                        <th data-col="concern_ratio" class="num">CR</th>
+                        <th data-col="concern_ratio" class="num" title="Concern Ratio: disclaimer density">Concern</th>
                         <th data-col="verdict">Verdict</th>
-                        <th data-col="framing_sensitivity" class="num">FS</th>
+                        <th data-col="framing_sensitivity" class="num" title="Framing Sensitivity (0–6)">Framing</th>
                         <th data-col="behavioral_shift">Shift</th>
                         <th data-col="gap_confirmed" class="num">Gap</th>
                     </tr>

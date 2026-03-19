@@ -118,7 +118,7 @@ export async function renderDomainDetail(container, data, domain) {
                         <th>Run</th>
                         <th>Classification</th>
                         <th>Verdict</th>
-                        <th class="num">FS</th>
+                        <th class="num" title="Framing Sensitivity (0–6)">Framing</th>
                         <th>Shift</th>
                         <th class="num">Gap</th>
                     </tr>

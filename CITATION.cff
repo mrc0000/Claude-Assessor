@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Claude-Assessor: Reasoning Honesty Evaluation Framework"
+type: software
+authors:
+  - family-names: Chapman
+    given-names: Michael R.
+license: MIT
+version: 1.6.0
+date-released: "2026-03-19"
+repository-code: "https://github.com/mrc0000/Claude-Assessor"
+keywords:
+  - ai-evaluation
+  - reasoning-honesty
+  - sociolinguistic-probing
+  - llm-evaluation
+  - epistemic-behavior
+abstract: >-
+  A sociolinguistic evaluation framework that audits reasoning honesty
+  in large language models. Tests whether AI models reason transparently
+  about their limitations or deploy patterned evasion strategies, and
+  whether those patterns shift based on who the model believes is asking.

@@ -605,6 +605,13 @@ summary:hover {{ text-decoration: underline; }}
 </div>
 
 </div>
+
+<div style="text-align:center;padding:2rem 0;color:var(--muted);font-size:0.7rem;border-top:1px solid var(--border);margin-top:2rem;">
+    Claude-Assessor v1.6.0 — Reasoning Honesty Evaluation Framework |
+    <a href="https://github.com/mrc0000/Claude-Assessor" style="color:var(--muted)">github.com/mrc0000/Claude-Assessor</a> |
+    MIT License
+</div>
+
 </body>
 </html>"""
 
